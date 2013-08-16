@@ -218,12 +218,13 @@ BOOT:
   {
     int val, i = 0;
     const char *sym;
-    char name[4096];
+    char name[4096] = "NanoMsg::Raw::";
+    size_t prefixlen = sizeof("NanoMsg::Raw::") - 1;
     while ((sym = nn_symbol(i++, &val)) != NULL) {
       CV *cv;
-      av_push(symbol_names, newSVpv(sym, 0));
-      strcpy(name, "NanoMsg::Raw::");
-      strncat(name, sym, sizeof(name));
+      size_t symlen = strlen(sym);
+      av_push(symbol_names, newSVpv(sym, symlen));
+      memcpy(name + prefixlen, sym, symlen+1);
       cv = newXS(name, XS_NanoMsg_nn_constant, file);
       XSANY.any_i32 = val;
     }
