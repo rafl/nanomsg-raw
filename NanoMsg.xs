@@ -11,6 +11,15 @@
   sv_setpv(errsv, nn_strerror(errno)); \
 } STMT_END
 
+#define PERL_NN_HANDLE_FAILURE_RETVAL PERL_NN_HANDLE_FAILURE(RETVAL)
+
+#define PERL_NN_HANDLE_FAILURE(ret) STMT_START { \
+  if (ret < 0) { \
+    PERL_NN_SET_ERRNO; \
+    XSRETURN_UNDEF; \
+  } \
+} STMT_END
+
 MODULE=NanoMsg  PACKAGE=NanoMsg
 
 PROTOTYPES: DISABLE
@@ -21,11 +30,16 @@ int
 nn_socket (domain, protocol)
     int domain
     int protocol
+  POSTCALL:
+    PERL_NN_HANDLE_FAILURE_RETVAL;
+    if (RETVAL < 0)
+      XSRETURN_UNDEF;
 
 int
 nn_close (s)
     int s
   POSTCALL:
+    PERL_NN_HANDLE_FAILURE_RETVAL;
     RETVAL = !RETVAL;
 
 int
@@ -50,6 +64,9 @@ nn_setsockopt (s, level, option, optval)
     }
   C_ARGS:
     s, level, option, c_optval, c_optvallen
+  POSTCALL:
+    PERL_NN_HANDLE_FAILURE_RETVAL;
+    RETVAL = !RETVAL;
 
 SV *
 nn_getsockopt (s, level, option)
@@ -58,13 +75,14 @@ nn_getsockopt (s, level, option)
     int option
   PREINIT:
     size_t optvallen;
+    int ret;
   INIT:
     RETVAL = newSV(257);
 	(void)SvPOK_only(RETVAL);
   CODE:
-    if (nn_getsockopt(s, level, option, SvPVX(RETVAL), &optvallen))
-      XSRETURN_UNDEF;
+    ret = nn_getsockopt(s, level, option, SvPVX(RETVAL), &optvallen);
   POSTCALL:
+    PERL_NN_HANDLE_FAILURE(ret);
     SvCUR_set(RETVAL, optvallen);
     *SvEND(RETVAL) = '\0';
   OUTPUT:
@@ -74,16 +92,23 @@ int
 nn_bind (s, addr)
     int s
     const char *addr
+  POSTCALL:
+    PERL_NN_HANDLE_FAILURE_RETVAL;
 
 int
 nn_connect (s, addr)
     int s
     const char *addr
+  POSTCALL:
+    PERL_NN_HANDLE_FAILURE_RETVAL;
 
 int
 nn_shutdown (s, how)
     int s
     int how
+  POSTCALL:
+    PERL_NN_HANDLE_FAILURE_RETVAL;
+    RETVAL = !RETVAL;
 
 int
 nn_send (s, buf, flags)
@@ -97,6 +122,8 @@ nn_send (s, buf, flags)
     c_buf = SvPV(buf, len);
   C_ARGS:
     s, c_buf, len, flags
+  POSTCALL:
+    PERL_NN_HANDLE_FAILURE_RETVAL;
 
 int
 nn_recv (s, buf, len, flags)
@@ -114,8 +141,7 @@ nn_recv (s, buf, len, flags)
   C_ARGS:
     s, c_buf, len, flags
   POSTCALL:
-    if (RETVAL < 0)
-      XSRETURN_UNDEF;
+    PERL_NN_HANDLE_FAILURE_RETVAL;
     SvCUR_set(buf, RETVAL);
     *SvEND(buf) = '\0';
 	(void)SvPOK_only(buf);
@@ -124,7 +150,6 @@ nn_recv (s, buf, len, flags)
 
 # TODO: sendmsg, recvmsg, allocmsg, freemsg, cmsg
 
-# TODO: use this to set the pv part of $!
 const char *
 nn_strerror (errnum)
     int errnum
@@ -133,6 +158,9 @@ int
 nn_device (s1, s2)
     int s1
     int s2
+  POSTCALL:
+    PERL_NN_HANDLE_FAILURE_RETVAL;
+
 
 void
 nn_term ()
