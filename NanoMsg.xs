@@ -18,6 +18,8 @@ nn_socket (domain, protocol)
 int
 nn_close (s)
     int s
+  POSTCALL:
+    RETVAL = !RETVAL;
 
 int
 nn_setsockopt (s, level, option, optval)
