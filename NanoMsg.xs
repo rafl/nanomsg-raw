@@ -28,7 +28,7 @@ XS_INTERNAL(XS_NanoMsg_nn_constant)
   XSRETURN(1);
 }
 
-MODULE=NanoMsg  PACKAGE=NanoMsg
+MODULE=NanoMsg  PACKAGE=NanoMsg::Raw
 
 PROTOTYPES: DISABLE
 
@@ -163,7 +163,7 @@ BOOT:
     char *sym, name[4096];
     while ((sym = nn_symbol(i++, &val)) != NULL) {
       CV *cv;
-      strcpy(name, "NanoMsg::");
+      strcpy(name, "NanoMsg::Raw::");
       strncat(name, sym, sizeof(name));
       cv = newXS(name, XS_NanoMsg_nn_constant, file);
       XSANY.any_i32 = val;

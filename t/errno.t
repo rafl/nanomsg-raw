@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use Test::More 0.89;
 
-use NanoMsg;
+use NanoMsg::Raw;
 
 my $s = nn_socket(AF_SP, NN_PAIR);
 nn_term;

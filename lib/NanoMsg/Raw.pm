@@ -1,11 +1,11 @@
-package NanoMsg;
+package NanoMsg::Raw;
 
 use strict;
 use warnings;
 use XSLoader;
 
 BEGIN {
-    XSLoader::load __PACKAGE__; # TODO: version
+    XSLoader::load 'NanoMsg'; # TODO: version
 }
 
 use Exporter 'import';

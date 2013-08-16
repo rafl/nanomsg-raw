@@ -3,7 +3,7 @@ use warnings;
 use Test::More 0.89;
 use Test::TCP;
 
-use NanoMsg;
+use NanoMsg::Raw;
 
 # This test checks whether blocking on send/recv works as expected.
 
