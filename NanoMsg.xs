@@ -4,7 +4,7 @@
 
 #include <nanomsg/nn.h>
 
-MODULE=NanoMsg  PACKAGE=NanoMsg  PREFIX=nn_
+MODULE=NanoMsg  PACKAGE=NanoMsg
 
 PROTOTYPES: DISABLE
 
