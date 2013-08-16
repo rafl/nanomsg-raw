@@ -14,6 +14,8 @@
 typedef int perl_nn_int;
 typedef int perl_nn_int_bool;
 
+AV *symbol_names;
+
 XS_INTERNAL(XS_NanoMsg_nn_constant);
 XS_INTERNAL(XS_NanoMsg_nn_constant)
 {
@@ -207,18 +209,19 @@ void
 _symbols ()
   PREINIT:
     int i;
-    const char *sym;
   PPCODE:
-    while ((sym = nn_symbol(i++, NULL)) != NULL)
-      mXPUSHp(sym, strlen(sym));
+    for (i = 0; i <= av_len(symbol_names); i++)
+      mPUSHs(SvREFCNT_inc(*av_fetch(symbol_names, i, 0)));
 
 BOOT:
+  symbol_names = newAV();
   {
     int val, i = 0;
     const char *sym;
     char name[4096];
     while ((sym = nn_symbol(i++, &val)) != NULL) {
       CV *cv;
+      av_push(symbol_names, newSVpv(sym, 0));
       strcpy(name, "NanoMsg::Raw::");
       strncat(name, sym, sizeof(name));
       cv = newXS(name, XS_NanoMsg_nn_constant, file);
