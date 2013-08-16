@@ -13,7 +13,7 @@ use Exporter 'import';
 our @EXPORT = (
     _symbols(),
     (map { "nn_$_" } qw(socket close setsockopt getsockopt bind connect shutdown
-                        send recv strerror device term)),
+                        send recv sendmsg recvmsg strerror device term)),
 );
 
 1;
