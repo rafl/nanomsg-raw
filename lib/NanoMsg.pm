@@ -12,7 +12,7 @@ use Exporter 'import';
 
 our @EXPORT = (
     (map { "nn_$_" } qw(socket close setsockopt getsockopt bind connect shutdown
-                       send recv device term)),
+                       send recv strerror device term)),
     qw(AF_SP NN_PAIR),
 );
 
