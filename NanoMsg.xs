@@ -3,6 +3,7 @@
 #include "XSUB.h"
 
 #include <nanomsg/nn.h>
+#include <nanomsg/pair.h>
 
 MODULE=NanoMsg  PACKAGE=NanoMsg
 
@@ -129,3 +130,17 @@ nn_device (s1, s2)
 
 void
 nn_term ()
+
+int
+AF_SP ()
+  CODE:
+    RETVAL = AF_SP;
+  OUTPUT:
+    RETVAL
+
+int
+NN_PAIR ()
+  CODE:
+    RETVAL = NN_PAIR;
+  OUTPUT:
+    RETVAL
