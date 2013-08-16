@@ -174,7 +174,7 @@ nn_recvmsg (s, flags, ...)
     struct nn_msghdr hdr;
     struct nn_iovec *iov;
     int iovlen, i;
-    size_t nbytes;
+    size_t nbytes, max;
   INIT:
     iovlen = items - 2;
     Newx(iov, iovlen, struct nn_iovec);
@@ -192,15 +192,14 @@ nn_recvmsg (s, flags, ...)
   C_ARGS:
     s, &hdr, flags
   POSTCALL:
-    i = 0;
     nbytes = RETVAL;
-    while (nbytes > 0) {
+    for (i = 0; i < iovlen; i++) {
       size_t max = iov[i].iov_len < nbytes ? iov[i].iov_len : nbytes;
-      SvCUR_set(ST(i++ + 2), max);
-      nbytes -= max;
-    }
-    for (i = 0; i < iovlen; i++)
+      SvCUR_set(ST(i + 2), max);
       *SvEND(ST(i + 2)) = '\0';
+      if (nbytes > 0)
+        nbytes -= max;
+    }
   CLEANUP:
     Safefree(iov);
 
