@@ -4,4 +4,5 @@ use ExtUtils::MakeMaker;
 
 WriteMakefile(
     NAME => 'NanoMsg',
+    LIBS => '-lnanomsg',
 );
