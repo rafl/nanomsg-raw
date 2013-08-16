@@ -1,0 +1,22 @@
+perl_nn_int  T_PERL_NN_INT
+perl_nn_int_bool  T_PERL_NN_INT_BOOL
+
+OUTPUT
+
+T_PERL_NN_INT
+  if ($var < 0) {
+    PERL_NN_SET_ERRNO;
+    sv_setsv($arg, &PL_sv_undef);
+  }
+  else {
+    sv_setiv($arg, (IV)$var);
+  }
+
+T_PERL_NN_INT_BOOL
+  if ($var < 0) {
+    PERL_NN_SET_ERRNO;
+    $arg = &PL_sv_no;
+  }
+  else {
+    $arg = &PL_sv_yes;
+  }
