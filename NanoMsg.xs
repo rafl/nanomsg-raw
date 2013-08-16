@@ -141,7 +141,7 @@ nn_recv (s, buf, len, flags)
   OUTPUT:
     RETVAL
 
-# TODO: recvmsg, allocmsg, freemsg, cmsg
+# TODO: allocmsg, freemsg, cmsg
 
 perl_nn_int
 nn_sendmsg (s, flags, ...)
@@ -157,6 +157,33 @@ nn_sendmsg (s, flags, ...)
     for (i = 0; i < iovlen; i++)
       iov[i].iov_base = SvPV(ST(i + 2), iov[i].iov_len);
     memset(&hdr, 0, sizeof(hdr));
+    hdr.msg_iov = iov;
+    hdr.msg_iovlen = iovlen;
+  C_ARGS:
+    s, &hdr, flags
+  CLEANUP:
+    Safefree(iov);
+
+perl_nn_int
+nn_recvmsg (s, flags, ...)
+    int s
+    int flags
+  PREINIT:
+    struct nn_msghdr hdr;
+    struct nn_iovec *iov;
+    int iovlen, i;
+  INIT:
+    iovlen = items - 2;
+    Newx(iov, iovlen, struct nn_iovec);
+    for (i = 0; i < iovlen; i++) {
+      SV *svbuf = ST(i + 2);
+      if (!SvOK(svbuf))
+        sv_setpvs(svbuf, "");
+      SvPV_force_nolen(svbuf);
+      iov[i].iov_base = SvPVX(svbuf);
+      iov[i].iov_len = SvLEN(svbuf);
+    }
+    memset (&hdr, 0, sizeof (hdr));
     hdr.msg_iov = iov;
     hdr.msg_iovlen = iovlen;
   C_ARGS:
