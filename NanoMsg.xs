@@ -14,6 +14,20 @@
 typedef int perl_nn_int;
 typedef int perl_nn_int_bool;
 
+XS_INTERNAL(XS_NanoMsg_nn_constant);
+XS_INTERNAL(XS_NanoMsg_nn_constant)
+{
+  dVAR;
+  dXSARGS;
+  dXSI32;
+  dXSTARG;
+  if (items != 0)
+    croak_xs_usage(cv,  "");
+  XSprePUSH;
+  PUSHi((IV)ix);
+  XSRETURN(1);
+}
+
 MODULE=NanoMsg  PACKAGE=NanoMsg
 
 PROTOTYPES: DISABLE
@@ -143,16 +157,15 @@ nn_device (s1, s2)
 void
 nn_term ()
 
-int
-AF_SP ()
-  CODE:
-    RETVAL = AF_SP;
-  OUTPUT:
-    RETVAL
-
-int
-NN_PAIR ()
-  CODE:
-    RETVAL = NN_PAIR;
-  OUTPUT:
-    RETVAL
+BOOT:
+  {
+    int val, i = 0;
+    char *sym, name[4096];
+    while ((sym = nn_symbol(i++, &val)) != NULL) {
+      CV *cv;
+      strcpy(name, "NanoMsg::");
+      strncat(name, sym, sizeof(name));
+      cv = newXS(name, XS_NanoMsg_nn_constant, file);
+      XSANY.any_i32 = val;
+    }
+  }
