@@ -207,7 +207,7 @@ void
 _symbols ()
   PREINIT:
     int i;
-    char *sym;
+    const char *sym;
   PPCODE:
     while ((sym = nn_symbol(i++, NULL)) != NULL)
       mXPUSHp(sym, strlen(sym));
@@ -215,7 +215,8 @@ _symbols ()
 BOOT:
   {
     int val, i = 0;
-    char *sym, name[4096];
+    const char *sym;
+    char name[4096];
     while ((sym = nn_symbol(i++, &val)) != NULL) {
       CV *cv;
       strcpy(name, "NanoMsg::Raw::");
