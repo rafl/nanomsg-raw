@@ -5,6 +5,12 @@
 #include <nanomsg/nn.h>
 #include <nanomsg/pair.h>
 
+#define PERL_NN_SET_ERRNO STMT_START { \
+  SV *errsv = get_sv("!", GV_ADD); \
+  sv_setiv(errsv, errno); \
+  sv_setpv(errsv, nn_strerror(errno)); \
+} STMT_END
+
 MODULE=NanoMsg  PACKAGE=NanoMsg
 
 PROTOTYPES: DISABLE
