@@ -32,8 +32,6 @@ MODULE=NanoMsg  PACKAGE=NanoMsg::Raw
 
 PROTOTYPES: DISABLE
 
-# TODO: constants
-
 perl_nn_int
 nn_socket (domain, protocol)
     int domain
@@ -156,6 +154,15 @@ nn_device (s1, s2)
 
 void
 nn_term ()
+
+void
+_symbols ()
+  PREINIT:
+    int i;
+    char *sym;
+  PPCODE:
+    while ((sym = nn_symbol(i++, NULL)) != NULL)
+      mXPUSHp(sym, strlen(sym));
 
 BOOT:
   {

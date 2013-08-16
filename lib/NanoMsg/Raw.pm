@@ -11,9 +11,9 @@ BEGIN {
 use Exporter 'import';
 
 our @EXPORT = (
+    _symbols(),
     (map { "nn_$_" } qw(socket close setsockopt getsockopt bind connect shutdown
-                       send recv strerror device term)),
-    qw(AF_SP NN_PAIR),
+                        send recv strerror device term)),
 );
 
 1;
