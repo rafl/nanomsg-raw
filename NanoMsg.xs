@@ -137,7 +137,7 @@ nn_recv (s, buf, len, flags)
       PERL_NN_SET_ERRNO;
       XSRETURN_UNDEF;
     }
-    SvCUR_set(buf, len < RETVAL ? len : RETVAL);
+    SvCUR_set(buf, (int)len < RETVAL ? (int)len : RETVAL);
     *SvEND(buf) = '\0';
 	(void)SvPOK_only(buf);
   OUTPUT:
@@ -174,7 +174,7 @@ nn_recvmsg (s, flags, ...)
     struct nn_msghdr hdr;
     struct nn_iovec *iov;
     int iovlen, i;
-    size_t nbytes, max;
+    size_t nbytes;
   INIT:
     iovlen = items - 2;
     Newx(iov, iovlen, struct nn_iovec);
