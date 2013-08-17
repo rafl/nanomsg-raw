@@ -161,7 +161,7 @@ nn_recv (s, buf, len, flags)
   OUTPUT:
     RETVAL
 
-# TODO: freemsg, cmsg
+# TODO: cmsg
 
 perl_nn_int
 nn_sendmsg (s, flags, ...)
@@ -266,3 +266,17 @@ BOOT:
     cv = newXS(name, XS_NanoMsg_nn_constant, file);
     XSANY.any_i32 = NN_MSG;
   }
+
+MODULE=NanoMsg  PACKAGE=NanoMsg::Raw::Message
+
+void
+DESTROY (sv)
+    SV *sv
+  PREINIT:
+    SV *obj;
+  CODE:
+    obj = SvRV(sv);
+    nn_freemsg(SvPVX(obj));
+    SvPOK_off(obj);
+    SvPVX(obj) = NULL;
+    sv_bless(sv, gv_stashpvs("NanoMsg::Raw::Message::Freed", GV_ADD));
