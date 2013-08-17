@@ -3,6 +3,7 @@ package NanoMsg::Raw;
 use strict;
 use warnings;
 use XSLoader;
+use NanoMsg::Raw::Message;
 
 BEGIN {
     XSLoader::load 'NanoMsg'; # TODO: version
