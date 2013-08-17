@@ -137,7 +137,7 @@ nn_recv (s, buf, len, flags)
       PERL_NN_SET_ERRNO;
       XSRETURN_UNDEF;
     }
-    SvCUR_set(buf, RETVAL);
+    SvCUR_set(buf, len < RETVAL ? len : RETVAL);
     *SvEND(buf) = '\0';
 	(void)SvPOK_only(buf);
   OUTPUT:
