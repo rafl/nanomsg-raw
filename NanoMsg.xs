@@ -226,16 +226,20 @@ _symbols ()
 BOOT:
   symbol_names = newAV();
   {
-    int val, i = 0;
+    CV *cv;
     const char *sym;
+    int val, i = 0;
     char name[4096] = "NanoMsg::Raw::";
     size_t prefixlen = sizeof("NanoMsg::Raw::") - 1;
     while ((sym = nn_symbol(i++, &val)) != NULL) {
-      CV *cv;
       size_t symlen = strlen(sym);
       av_push(symbol_names, newSVpv(sym, symlen));
       memcpy(name + prefixlen, sym, symlen+1);
       cv = newXS(name, XS_NanoMsg_nn_constant, file);
       XSANY.any_i32 = val;
     }
+
+    memcpy(name + prefixlen, "NN_MSG", sizeof("NN_MSG"));
+    cv = newXS(name, XS_NanoMsg_nn_constant, file);
+    XSANY.any_i32 = NN_MSG;
   }
