@@ -166,10 +166,15 @@ nn_recv (s, buf, len, flags)
   PREINIT:
     void *c_buf;
   INIT:
-    if (!SvOK(buf))
-      sv_setpvs(buf, "");
-    SvPV_force_nolen(buf);
-    c_buf = SvGROW(buf, len+1);
+    if (len == NN_MSG) {
+      c_buf = &SvPVX(perl_nn_upgrade_to_message(aTHX_ buf));
+    }
+    else {
+      if (!SvOK(buf))
+        sv_setpvs(buf, "");
+      SvPV_force_nolen(buf);
+      c_buf = SvGROW(buf, len+1);
+    }
   C_ARGS:
     s, c_buf, len, flags
   POSTCALL:
@@ -177,11 +182,15 @@ nn_recv (s, buf, len, flags)
       PERL_NN_SET_ERRNO;
       XSRETURN_UNDEF;
     }
-    SvCUR_set(buf, (int)len < RETVAL ? (int)len : RETVAL);
-    *SvEND(buf) = '\0';
-	(void)SvPOK_only(buf);
-  OUTPUT:
-    RETVAL
+    if (len == NN_MSG) {
+      SvPOK_on(SvRV(buf));
+      SvCUR_set(SvRV(buf), RETVAL);
+    }
+    else {
+      SvCUR_set(buf, (int)len < RETVAL ? (int)len : RETVAL);
+      *SvEND(buf) = '\0';
+      (void)SvPOK_only(buf);
+    }
 
 # TODO: cmsg
 
