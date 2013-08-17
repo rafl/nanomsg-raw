@@ -13,6 +13,7 @@
 
 typedef int perl_nn_int;
 typedef int perl_nn_int_bool;
+typedef void * perl_nn_messagebuf;
 
 AV *symbol_names;
 
@@ -28,6 +29,23 @@ XS_INTERNAL(XS_NanoMsg_nn_constant)
   XSprePUSH;
   PUSHi((IV)ix);
   XSRETURN(1);
+}
+
+static SV *
+perl_nn_upgrade_to_message (pTHX_ SV *sv)
+{
+  SV *obj = newSV(0);
+  sv_upgrade(sv, SVt_RV);
+  if (SvROK(sv))
+    SvREFCNT_dec(SvRV(sv));
+  SvRV_set(sv, obj);
+  SvROK_on(sv);
+  sv_upgrade(obj, SVt_PV);
+  SvPOK_on(obj);
+  SvCUR_set(obj, 0);
+  SvLEN_set(obj, 0);
+  sv_bless(sv, gv_stashpvs("NanoMsg::Raw::Message", GV_ADD));
+  return obj;
 }
 
 MODULE=NanoMsg  PACKAGE=NanoMsg::Raw
@@ -143,7 +161,7 @@ nn_recv (s, buf, len, flags)
   OUTPUT:
     RETVAL
 
-# TODO: allocmsg, freemsg, cmsg
+# TODO: freemsg, cmsg
 
 perl_nn_int
 nn_sendmsg (s, flags, ...)
@@ -202,6 +220,11 @@ nn_recvmsg (s, flags, ...)
     }
   CLEANUP:
     Safefree(iov);
+
+perl_nn_messagebuf
+nn_allocmsg (size, type)
+    size_t size
+    int type
 
 const char *
 nn_strerror (errnum)
