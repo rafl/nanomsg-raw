@@ -45,6 +45,7 @@ perl_nn_upgrade_to_message (pTHX_ SV *sv)
   SvCUR_set(obj, 0);
   SvLEN_set(obj, 0);
   sv_bless(sv, gv_stashpvs("NanoMsg::Raw::Message", GV_ADD));
+  SvREADONLY_on(obj);
   return obj;
 }
 
@@ -53,6 +54,7 @@ perl_nn_invalidate_message (pTHX_ SV *sv)
 {
   SV *obj = SvRV(sv);
   void *ret = SvPVX(obj);
+  SvREADONLY_off(obj);
   SvPOK_off(obj);
   SvPVX(obj) = NULL;
   sv_bless(sv, gv_stashpvs("NanoMsg::Raw::Message::Freed", GV_ADD));
