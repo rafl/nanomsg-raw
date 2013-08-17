@@ -142,9 +142,18 @@ nn_send (s, buf, flags)
     void *c_buf;
     size_t len;
   INIT:
-    c_buf = SvPV(buf, len);
+    if (sv_isobject(buf) && sv_isa(buf, "NanoMsg::Raw::Message")) {
+      c_buf = &SvPVX(SvRV(buf));
+      len = NN_MSG;
+    }
+    else {
+      c_buf = SvPV(buf, len);
+    }
   C_ARGS:
     s, c_buf, len, flags
+  POSTCALL:
+    if (len == NN_MSG)
+      perl_nn_invalidate_message(aTHX_ buf);
 
 int
 nn_recv (s, buf, len, flags)
