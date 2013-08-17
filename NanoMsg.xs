@@ -270,6 +270,21 @@ BOOT:
 MODULE=NanoMsg  PACKAGE=NanoMsg::Raw::Message
 
 void
+copy (sv, src)
+    SV *sv
+    SV *src
+  PREINIT:
+    const void *buf;
+    STRLEN len;
+    SV *obj;
+  INIT:
+    obj = SvRV(sv);
+    buf = SvPV(src, len);
+  CODE:
+    memcpy(SvPVX(obj), buf, len);
+    SvCUR_set(obj, len);
+
+void
 DESTROY (sv)
     SV *sv
   PREINIT:
