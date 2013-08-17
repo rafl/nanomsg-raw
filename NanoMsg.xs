@@ -22,7 +22,7 @@ XS_INTERNAL(XS_NanoMsg_nn_constant)
 {
   dVAR;
   dXSARGS;
-  dXSI32;
+  IV ix = XSANY.any_iv;
   dXSTARG;
   if (items != 0)
     croak_xs_usage(cv,  "");
@@ -290,12 +290,12 @@ BOOT:
       av_push(symbol_names, newSVpv(sym, symlen));
       memcpy(name + prefixlen, sym, symlen+1);
       cv = newXS(name, XS_NanoMsg_nn_constant, file);
-      XSANY.any_i32 = val;
+      XSANY.any_iv = val;
     }
 
     memcpy(name + prefixlen, "NN_MSG", sizeof("NN_MSG"));
     cv = newXS(name, XS_NanoMsg_nn_constant, file);
-    XSANY.any_i32 = NN_MSG;
+    XSANY.any_iv = NN_MSG;
   }
 
 MODULE=NanoMsg  PACKAGE=NanoMsg::Raw::Message
