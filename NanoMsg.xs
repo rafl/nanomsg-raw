@@ -48,6 +48,17 @@ perl_nn_upgrade_to_message (pTHX_ SV *sv)
   return obj;
 }
 
+static void *
+perl_nn_invalidate_message (pTHX_ SV *sv)
+{
+  SV *obj = SvRV(sv);
+  void *ret = SvPVX(obj);
+  SvPOK_off(obj);
+  SvPVX(obj) = NULL;
+  sv_bless(sv, gv_stashpvs("NanoMsg::Raw::Message::Freed", GV_ADD));
+  return ret;
+}
+
 MODULE=NanoMsg  PACKAGE=NanoMsg::Raw
 
 PROTOTYPES: DISABLE
@@ -287,11 +298,5 @@ copy (sv, src)
 void
 DESTROY (sv)
     SV *sv
-  PREINIT:
-    SV *obj;
   CODE:
-    obj = SvRV(sv);
-    nn_freemsg(SvPVX(obj));
-    SvPOK_off(obj);
-    SvPVX(obj) = NULL;
-    sv_bless(sv, gv_stashpvs("NanoMsg::Raw::Message::Freed", GV_ADD));
+    nn_freemsg(perl_nn_invalidate_message(aTHX_ sv));
