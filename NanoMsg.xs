@@ -288,6 +288,8 @@ perl_nn_messagebuf
 nn_allocmsg (size, type)
     size_t size
     int type
+  CLEANUP:
+    SvUVX(SvRV(ST(0))) = size;
 
 const char *
 nn_strerror (errnum)
