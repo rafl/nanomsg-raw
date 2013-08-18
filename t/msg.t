@@ -29,7 +29,7 @@ my $socket_address = 'inproc://test';
     $buf1->copy(join '' => map chr, 0 .. 255);
 
     is nn_sendmsg($sc, 0, $buf1), 256;
-    is nn_recvmsg($sb, 0, NN_MSG() => $buf2), 256;
+    is nn_recvmsg($sb, 0, $buf2 => NN_MSG), 256;
     is $buf2, join '' => map chr, 0 .. 255;
 
     ok nn_close $_ for $sc, $sb;

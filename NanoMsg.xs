@@ -240,8 +240,8 @@ nn_recvmsg (s, flags, ...)
     iovlen = (items - 2) / 2;
     Newx(iov, iovlen, struct nn_iovec);
     for (i = 0; i < iovlen; i++) {
-      UV len = SvUV(ST(i*2 + 2));
-      SV *svbuf = ST(i*2 + 3);
+      SV *svbuf = ST(i*2 + 2);
+      UV len = SvUV(ST(i*2 + 3));
       iov[i].iov_len = len;
       if (len == NN_MSG) {
         iov[i].iov_base = &SvPVX(perl_nn_upgrade_to_message(aTHX_ svbuf));
@@ -266,12 +266,12 @@ nn_recvmsg (s, flags, ...)
     }
     nbytes = RETVAL;
     if (iovlen == 1 && iov[0].iov_len == NN_MSG) {
-      SvCUR_set(SvRV(ST(3)), RETVAL);
+      SvCUR_set(SvRV(ST(2)), RETVAL);
     }
     else {
       for (i = 0; i < iovlen; i++) {
         size_t max = iov[i].iov_len < nbytes ? iov[i].iov_len : nbytes;
-        SvCUR_set(ST(i*2 + 3), max);
+        SvCUR_set(ST(i*2 + 2), max);
         if (nbytes > 0)
           nbytes -= max;
       }
