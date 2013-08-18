@@ -1,0 +1,8 @@
+.*
+!.gitignore
+*blib
+*META*
+Makefile*
+!Makefile.PL
+/NanoMsg.*
+!/NanoMsg.xs
