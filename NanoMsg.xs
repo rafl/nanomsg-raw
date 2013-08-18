@@ -17,8 +17,8 @@ typedef void * perl_nn_messagebuf;
 
 AV *symbol_names;
 
-XS_INTERNAL(XS_NanoMsg_nn_constant);
-XS_INTERNAL(XS_NanoMsg_nn_constant)
+XS_INTERNAL(XS_NanoMsg__Raw_nn_constant);
+XS_INTERNAL(XS_NanoMsg__Raw_nn_constant)
 {
   dVAR;
   dXSARGS;
@@ -323,12 +323,12 @@ BOOT:
       size_t symlen = strlen(sym);
       av_push(symbol_names, newSVpv(sym, symlen));
       memcpy(name + prefixlen, sym, symlen+1);
-      cv = newXS(name, XS_NanoMsg_nn_constant, file);
+      cv = newXS(name, XS_NanoMsg__Raw_nn_constant, file);
       XSANY.any_iv = val;
     }
 
     memcpy(name + prefixlen, "NN_MSG", sizeof("NN_MSG"));
-    cv = newXS(name, XS_NanoMsg_nn_constant, file);
+    cv = newXS(name, XS_NanoMsg__Raw_nn_constant, file);
     XSANY.any_iv = NN_MSG;
   }
 
