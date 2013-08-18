@@ -345,6 +345,8 @@ copy (sv, src)
   INIT:
     obj = SvRV(sv);
     buf = SvPV(src, len);
+    if (len > SvUVX(obj))
+      croak("Trying to copy %d bytes into a message buffer of size %d", len, SvUVX(obj));
   CODE:
     memcpy(SvPVX(obj), buf, len);
     SvCUR_set(obj, len);
