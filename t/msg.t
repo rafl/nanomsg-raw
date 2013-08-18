@@ -51,6 +51,10 @@ my $socket_address = 'inproc://test';
         ${ $m } = 'asd';
     }, qr/^Modification of a read-only value attempted/;
 
+    like exception {
+        $m->copy('fooo');
+    }, qr/^Trying to copy 4 bytes into a message buffer of size 3/;
+
     $m->copy('foo');
     is $m, 'foo';
 
