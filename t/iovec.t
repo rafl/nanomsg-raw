@@ -19,17 +19,13 @@ my $buf2 = 'PQRSTUVWXYZ';
 
 is nn_sendmsg($sc, 0, $buf1, $buf2), 26;
 
-is nn_recvmsg($sb, 0, my $buf3, my $buf4), 26;
+is nn_recvmsg($sb, 0, 15 => my $buf3, 15 => my $buf4), 26;
 is $buf3, $buf1;
 is $buf4, $buf2;
 
 is nn_sendmsg($sc, 0, $buf1, $buf2), 26;
 
-my $buf5 = 'x' x 35;
-my $buf6 = '';
-my $buf7 = 'abc';
-
-is nn_recvmsg($sb, 0, $buf5, $buf6, $buf7), 26;
+is nn_recvmsg($sb, 0, 26 => my $buf5, 26 => my $buf6, 26 => my $buf7), 26;
 is $buf5, $buf1 . $buf2;
 is $buf6, '';
 is $buf7, '';

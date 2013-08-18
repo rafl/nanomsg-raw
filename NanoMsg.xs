@@ -227,11 +227,13 @@ nn_recvmsg (s, flags, ...)
   INIT:
     iovlen = items - 2;
     Newx(iov, iovlen, struct nn_iovec);
-    for (i = 0; i < iovlen; i++) {
-      SV *svbuf = ST(i + 2);
+    for (i = 0; i < iovlen; i += 2) {
+      SV *len = ST(i + 2);
+      SV *svbuf = ST(i + 3);
       if (!SvOK(svbuf))
         sv_setpvs(svbuf, "");
       SvPV_force_nolen(svbuf);
+      SvGROW(svbuf, SvIV(len));
       iov[i].iov_base = SvPVX(svbuf);
       iov[i].iov_len = SvLEN(svbuf) - 1;
     }
@@ -244,8 +246,7 @@ nn_recvmsg (s, flags, ...)
     nbytes = RETVAL;
     for (i = 0; i < iovlen; i++) {
       size_t max = iov[i].iov_len < nbytes ? iov[i].iov_len : nbytes;
-      SvCUR_set(ST(i + 2), max);
-      *SvEND(ST(i + 2)) = '\0';
+      SvCUR_set(ST(i + 3), max);
       if (nbytes > 0)
         nbytes -= max;
     }
