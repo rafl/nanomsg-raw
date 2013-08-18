@@ -40,7 +40,7 @@ perl_nn_upgrade_to_message (pTHX_ SV *sv)
     SvREFCNT_dec(SvRV(sv));
   SvRV_set(sv, obj);
   SvROK_on(sv);
-  sv_upgrade(obj, SVt_PV);
+  sv_upgrade(obj, SVt_PVMG);
   SvPOK_on(obj);
   SvCUR_set(obj, 0);
   SvLEN_set(obj, 0);
