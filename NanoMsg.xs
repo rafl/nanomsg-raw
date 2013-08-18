@@ -205,13 +205,25 @@ nn_sendmsg (s, flags, ...)
   INIT:
     iovlen = items - 2;
     Newx(iov, iovlen, struct nn_iovec);
-    for (i = 0; i < iovlen; i++)
-      iov[i].iov_base = SvPV(ST(i + 2), iov[i].iov_len);
+    for (i = 0; i < iovlen; i++) {
+      SV *sv = ST(i + 2);
+      if (sv_isobject(sv) && sv_isa(sv, "NanoMsg::Raw::Message")) {
+        iov[i].iov_base = &SvPVX(SvRV(sv));
+        iov[i].iov_len = NN_MSG;
+      }
+      else {
+        iov[i].iov_base = SvPV(sv, iov[i].iov_len);
+      }
+    }
     memset(&hdr, 0, sizeof(hdr));
     hdr.msg_iov = iov;
     hdr.msg_iovlen = iovlen;
   C_ARGS:
     s, &hdr, flags
+  POSTCALL:
+    for (i = 0; i < iovlen; i++)
+      if (iov[i].iov_len == NN_MSG)
+        perl_nn_invalidate_message(aTHX_ ST(i + 2));
   CLEANUP:
     Safefree(iov);
 
