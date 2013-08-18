@@ -107,7 +107,7 @@ nn_getsockopt (s, level, option)
     int ret;
   INIT:
     RETVAL = newSV(257);
-	(void)SvPOK_only(RETVAL);
+    (void)SvPOK_only(RETVAL);
   CODE:
     ret = nn_getsockopt(s, level, option, SvPVX(RETVAL), &optvallen);
   POSTCALL:
@@ -232,14 +232,14 @@ nn_recvmsg (s, flags, ...)
       SV *svbuf = ST(i*2 + 3);
       iov[i].iov_len = len;
       if (len == NN_MSG) {
-	iov[i].iov_base = &SvPVX(perl_nn_upgrade_to_message(aTHX_ svbuf));
+        iov[i].iov_base = &SvPVX(perl_nn_upgrade_to_message(aTHX_ svbuf));
       }
       else {
-	if (!SvOK(svbuf))
-	  sv_setpvs(svbuf, "");
-	SvPV_force_nolen(svbuf);
-	SvGROW(svbuf, len);
-	iov[i].iov_base = SvPVX(svbuf);
+        if (!SvOK(svbuf))
+          sv_setpvs(svbuf, "");
+        SvPV_force_nolen(svbuf);
+        SvGROW(svbuf, len);
+        iov[i].iov_base = SvPVX(svbuf);
       }
     }
     memset (&hdr, 0, sizeof (hdr));
@@ -258,10 +258,10 @@ nn_recvmsg (s, flags, ...)
     }
     else {
       for (i = 0; i < iovlen; i++) {
-	size_t max = iov[i].iov_len < nbytes ? iov[i].iov_len : nbytes;
-	SvCUR_set(ST(i*2 + 3), max);
-	if (nbytes > 0)
-	  nbytes -= max;
+        size_t max = iov[i].iov_len < nbytes ? iov[i].iov_len : nbytes;
+        SvCUR_set(ST(i*2 + 3), max);
+        if (nbytes > 0)
+          nbytes -= max;
       }
     }
   CLEANUP:
