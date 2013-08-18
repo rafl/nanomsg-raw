@@ -179,7 +179,7 @@ nn_recv (s, buf, len, flags)
       if (!SvOK(buf))
         sv_setpvs(buf, "");
       SvPV_force_nolen(buf);
-      c_buf = SvGROW(buf, len+1);
+      c_buf = SvGROW(buf, len);
     }
   C_ARGS:
     s, c_buf, len, flags
@@ -194,7 +194,6 @@ nn_recv (s, buf, len, flags)
     }
     else {
       SvCUR_set(buf, (int)len < RETVAL ? (int)len : RETVAL);
-      *SvEND(buf) = '\0';
       (void)SvPOK_only(buf);
     }
 
