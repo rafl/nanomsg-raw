@@ -61,6 +61,12 @@ perl_nn_invalidate_message (pTHX_ SV *sv)
   return ret;
 }
 
+static bool
+perl_nn_is_message (pTHX_ SV *sv)
+{
+  return sv_isobject(sv) && sv_isa(sv, "NanoMsg::Raw::Message");
+}
+
 MODULE=NanoMsg  PACKAGE=NanoMsg::Raw
 
 PROTOTYPES: DISABLE
@@ -144,7 +150,7 @@ nn_send (s, buf, flags)
     void *c_buf;
     size_t len;
   INIT:
-    if (sv_isobject(buf) && sv_isa(buf, "NanoMsg::Raw::Message")) {
+    if (perl_nn_is_message(aTHX_ buf)) {
       c_buf = &SvPVX(SvRV(buf));
       len = NN_MSG;
     }
@@ -207,7 +213,7 @@ nn_sendmsg (s, flags, ...)
     Newx(iov, iovlen, struct nn_iovec);
     for (i = 0; i < iovlen; i++) {
       SV *sv = ST(i + 2);
-      if (sv_isobject(sv) && sv_isa(sv, "NanoMsg::Raw::Message")) {
+      if (perl_nn_is_message(aTHX_ sv)) {
         iov[i].iov_base = &SvPVX(SvRV(sv));
         iov[i].iov_len = NN_MSG;
       }
