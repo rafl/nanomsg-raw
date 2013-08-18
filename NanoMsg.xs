@@ -215,7 +215,7 @@ nn_sendmsg (s, flags, ...)
   CLEANUP:
     Safefree(iov);
 
-perl_nn_int
+int
 nn_recvmsg (s, flags, ...)
     int s
     int flags
@@ -225,17 +225,22 @@ nn_recvmsg (s, flags, ...)
     int iovlen, i;
     size_t nbytes;
   INIT:
-    iovlen = items - 2;
+    iovlen = (items - 2) / 2;
     Newx(iov, iovlen, struct nn_iovec);
-    for (i = 0; i < iovlen; i += 2) {
-      SV *len = ST(i + 2);
-      SV *svbuf = ST(i + 3);
-      if (!SvOK(svbuf))
-        sv_setpvs(svbuf, "");
-      SvPV_force_nolen(svbuf);
-      SvGROW(svbuf, SvIV(len));
-      iov[i].iov_base = SvPVX(svbuf);
-      iov[i].iov_len = SvLEN(svbuf) - 1;
+    for (i = 0; i < iovlen; i++) {
+      UV len = SvUV(ST(i*2 + 2));
+      SV *svbuf = ST(i*2 + 3);
+      iov[i].iov_len = len;
+      if (len == NN_MSG) {
+	iov[i].iov_base = &SvPVX(perl_nn_upgrade_to_message(aTHX_ svbuf));
+      }
+      else {
+	if (!SvOK(svbuf))
+	  sv_setpvs(svbuf, "");
+	SvPV_force_nolen(svbuf);
+	SvGROW(svbuf, len);
+	iov[i].iov_base = SvPVX(svbuf);
+      }
     }
     memset (&hdr, 0, sizeof (hdr));
     hdr.msg_iov = iov;
@@ -243,12 +248,21 @@ nn_recvmsg (s, flags, ...)
   C_ARGS:
     s, &hdr, flags
   POSTCALL:
+    if (RETVAL < 0) {
+      PERL_NN_SET_ERRNO;
+      XSRETURN_UNDEF;
+    }
     nbytes = RETVAL;
-    for (i = 0; i < iovlen; i++) {
-      size_t max = iov[i].iov_len < nbytes ? iov[i].iov_len : nbytes;
-      SvCUR_set(ST(i + 3), max);
-      if (nbytes > 0)
-        nbytes -= max;
+    if (iovlen == 1 && iov[0].iov_len == NN_MSG) {
+      SvCUR_set(SvRV(ST(3)), RETVAL);
+    }
+    else {
+      for (i = 0; i < iovlen; i++) {
+	size_t max = iov[i].iov_len < nbytes ? iov[i].iov_len : nbytes;
+	SvCUR_set(ST(i*2 + 3), max);
+	if (nbytes > 0)
+	  nbytes -= max;
+      }
     }
   CLEANUP:
     Safefree(iov);
