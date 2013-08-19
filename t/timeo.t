@@ -1,18 +1,17 @@
 use strict;
 use warnings;
 use Test::More 0.89;
-use Time::HiRes 'clock_gettime', 'CLOCK_REALTIME';
+use Time::HiRes 'gettimeofday', 'tv_interval';
 
 use NanoMsg::Raw;
 
 sub timeit (&) {
     my ($cb) = @_;
 
-    my $started = clock_gettime CLOCK_REALTIME;
+    my $started = [gettimeofday];
     my @ret = $cb->();
-    my $finished = clock_gettime CLOCK_REALTIME;
 
-    ($finished - $started, @ret);
+    (tv_interval($started), @ret);
 }
 
 my $s = nn_socket AF_SP, NN_PAIR;
