@@ -1,7 +1,6 @@
 use strict;
 use warnings;
 use Test::More 0.89;
-use Test::TCP;
 
 use NanoMsg::Raw;
 
