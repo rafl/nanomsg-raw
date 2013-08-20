@@ -20,7 +20,34 @@ struct perl_nn_message {
   size_t len;
 };
 
-static MGVTBL perl_nn_message_vtbl = { 0 };
+static int
+perl_nn_message_mg_dup (pTHX_ MAGIC *mg, CLONE_PARAMS *param)
+{
+  struct perl_nn_message *dst;
+  struct perl_nn_message *src = (struct perl_nn_message *)mg->mg_ptr;
+
+  PERL_UNUSED_ARG(param);
+
+  Newx(dst, 1, struct perl_nn_message);
+  dst->len = src->len;
+  dst->buf = nn_allocmsg(src->len, 0); /* FIXME: alloc type */
+  memcpy(dst->buf, src->buf, src->len);
+
+  mg->mg_ptr = dst;
+
+  return 0;
+}
+
+static MGVTBL perl_nn_message_vtbl = {
+  NULL, /* get */
+  NULL, /* set */
+  NULL, /* len */
+  NULL, /* clear */
+  NULL, /* free */
+  NULL, /* copy */
+  perl_nn_message_mg_dup, /* dup */
+  NULL /* local */
+};
 
 static struct perl_nn_message *
 perl_nn_message_mg_find (pTHX_ SV *sv)
@@ -64,6 +91,7 @@ perl_nn_upgrade_to_message (pTHX_ SV *sv)
   SvREADONLY_on(obj);
   Newxz(msg, 1, struct perl_nn_message);
   mg = sv_magicext(obj, NULL, PERL_MAGIC_ext, &perl_nn_message_vtbl, msg, 0);
+  mg->mg_flags |= MGf_DUP;
   return msg;
 }
 
