@@ -265,8 +265,10 @@ nn_recv (s, buf, len, flags)
       XSRETURN_UNDEF;
     }
     if (len == NN_MSG) {
-      SvPOK_on(SvRV(buf));
       msg->len = RETVAL;
+      SvPOK_on(SvRV(buf));
+      SvPVX(SvRV(buf)) = msg->buf;
+      SvCUR_set(SvRV(buf), RETVAL);
     }
     else {
       SvCUR_set(buf, (int)len < RETVAL ? (int)len : RETVAL);
@@ -351,6 +353,8 @@ nn_recvmsg (s, flags, ...)
     nbytes = RETVAL;
     if (iovlen == 1 && iov[0].iov_len == NN_MSG) {
       msg->len = RETVAL;
+      SvPVX(SvRV(ST(2))) = msg->buf;
+      SvCUR_set(SvRV(ST(2)), RETVAL);
     }
     else {
       for (i = 0; i < iovlen; i++) {
@@ -430,20 +434,5 @@ copy (sv, src)
       croak("Trying to copy %d bytes into a message buffer of size %d", len, msg->len);
   CODE:
     memcpy(msg->buf, buf, len);
+    SvPVX(obj) = msg->buf;
     SvCUR_set(obj, len);
-
-SV *
-data (sv, foo, bar)
-    SV *sv
-  PREINIT:
-    const struct perl_nn_message *msg;
-  INIT:
-    msg = perl_nn_message_mg_find(aTHX_ SvRV(sv));
-  CODE:
-    RETVAL = newSV(0);
-    sv_upgrade(RETVAL, SVt_PV);
-    SvPVX(RETVAL) = msg->buf;
-    SvCUR_set(RETVAL, msg->len);
-    SvPOK_on(RETVAL);
-  OUTPUT:
-    RETVAL
