@@ -33,7 +33,7 @@ perl_nn_message_mg_dup (pTHX_ MAGIC *mg, CLONE_PARAMS *param)
   dst->buf = nn_allocmsg(src->len, 0); /* FIXME: alloc type */
   memcpy(dst->buf, src->buf, src->len);
 
-  mg->mg_ptr = dst;
+  mg->mg_ptr = (char *)dst;
 
   return 0;
 }
@@ -41,7 +41,8 @@ perl_nn_message_mg_dup (pTHX_ MAGIC *mg, CLONE_PARAMS *param)
 static int
 perl_nn_message_mg_free (pTHX_ SV *sv, MAGIC *mg)
 {
-  struct perl_nn_message *msg = mg->mg_ptr;
+  struct perl_nn_message *msg = (struct perl_nn_message *)mg->mg_ptr;
+  PERL_UNUSED_ARG(sv);
   nn_freemsg(msg->buf);
   return 0;
 }
@@ -98,7 +99,7 @@ perl_nn_upgrade_to_message (pTHX_ SV *sv)
   sv_bless(sv, gv_stashpvs("NanoMsg::Raw::Message", GV_ADD));
   SvREADONLY_on(obj);
   Newxz(msg, 1, struct perl_nn_message);
-  mg = sv_magicext(obj, NULL, PERL_MAGIC_ext, &perl_nn_message_vtbl, msg, 0);
+  mg = sv_magicext(obj, NULL, PERL_MAGIC_ext, &perl_nn_message_vtbl, (char *)msg, 0);
   mg->mg_flags |= MGf_DUP;
   return msg;
 }
@@ -124,7 +125,7 @@ perl_nn_invalidate_message (pTHX_ SV *sv)
         SvMAGIC_set(SvRV(sv), moremg);
 
       mg->mg_moremagic = NULL;
-      msg = mg->mg_ptr;
+      msg = (struct perl_nn_message *)mg->mg_ptr;
       Safefree(mg);
 
       mg = prevmg;
