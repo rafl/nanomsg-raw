@@ -420,6 +420,10 @@ data (sv, foo, bar)
   INIT:
     msg = perl_nn_message_mg_find(aTHX_ SvRV(sv));
   CODE:
-    RETVAL = newSVpv(msg->buf, msg->len);
+    RETVAL = newSV(0);
+    sv_upgrade(RETVAL, SVt_PV);
+    SvPVX(RETVAL) = msg->buf;
+    SvCUR_set(RETVAL, msg->len);
+    SvPOK_on(RETVAL);
   OUTPUT:
     RETVAL
