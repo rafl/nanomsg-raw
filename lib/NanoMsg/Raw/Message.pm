@@ -3,6 +3,6 @@ use warnings;
 
 package NanoMsg::Raw::Message;
 
-use overload '""' => sub { ${ $_[0] } }, fallback => 1;
+use overload '""' => 'data', fallback => 1;
 
 1;

@@ -20,4 +20,4 @@ T_PERL_NN_MESSAGEBUF
   if ($var == NULL)
     PERL_NN_SET_ERRNO;
   else
-    SvPVX(perl_nn_upgrade_to_message(aTHX_ $arg)) = $var;
+    perl_nn_upgrade_to_message(aTHX_ $arg)->buf = $var;
