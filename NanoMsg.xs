@@ -106,12 +106,32 @@ perl_nn_upgrade_to_message (pTHX_ SV *sv)
 static struct perl_nn_message *
 perl_nn_invalidate_message (pTHX_ SV *sv)
 {
+  MAGIC *mg, *prevmg, *moremg = NULL;
+  struct perl_nn_message *msg = NULL;
   SV *obj = SvRV(sv);
-  struct perl_nn_message *msg = perl_nn_message_mg_find(aTHX_ SvRV(sv));
   SvREADONLY_off(obj);
   SvPOK_off(obj);
   SvPVX(obj) = NULL;
   sv_bless(sv, gv_stashpvs("NanoMsg::Raw::Message::Freed", GV_ADD));
+
+  for (prevmg = NULL, mg = SvMAGIC(SvRV(sv)); mg; prevmg = mg, mg = moremg) {
+    moremg = mg->mg_moremagic;
+    if (mg->mg_type == PERL_MAGIC_ext &&
+        mg->mg_virtual == &perl_nn_message_vtbl) {
+      if (prevmg)
+        prevmg->mg_moremagic = moremg;
+      else
+        SvMAGIC_set(SvRV(sv), moremg);
+
+      mg->mg_moremagic = NULL;
+      msg = mg->mg_ptr;
+      Safefree(mg);
+
+      mg = prevmg;
+    }
+  }
+
+  assert(msg);
   return msg;
 }
 
