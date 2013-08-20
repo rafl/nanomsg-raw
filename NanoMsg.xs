@@ -115,14 +115,14 @@ perl_nn_invalidate_message (pTHX_ SV *sv)
   SvPVX(obj) = NULL;
   sv_bless(sv, gv_stashpvs("NanoMsg::Raw::Message::Freed", GV_ADD));
 
-  for (prevmg = NULL, mg = SvMAGIC(SvRV(sv)); mg; prevmg = mg, mg = moremg) {
+  for (prevmg = NULL, mg = SvMAGIC(obj); mg; prevmg = mg, mg = moremg) {
     moremg = mg->mg_moremagic;
     if (mg->mg_type == PERL_MAGIC_ext &&
         mg->mg_virtual == &perl_nn_message_vtbl) {
       if (prevmg)
         prevmg->mg_moremagic = moremg;
       else
-        SvMAGIC_set(SvRV(sv), moremg);
+        SvMAGIC_set(obj, moremg);
 
       mg->mg_moremagic = NULL;
       msg = (struct perl_nn_message *)mg->mg_ptr;
@@ -266,10 +266,11 @@ nn_recv (s, buf, len, flags)
       XSRETURN_UNDEF;
     }
     if (len == NN_MSG) {
+      SV *obj = SvRV(buf);
       msg->len = RETVAL;
-      SvPOK_on(SvRV(buf));
-      SvPVX(SvRV(buf)) = msg->buf;
-      SvCUR_set(SvRV(buf), RETVAL);
+      SvPVX(obj) = msg->buf;
+      SvCUR_set(obj, RETVAL);
+      SvPOK_on(obj);
     }
     else {
       SvCUR_set(buf, (int)len < RETVAL ? (int)len : RETVAL);
@@ -353,9 +354,11 @@ nn_recvmsg (s, flags, ...)
     }
     nbytes = RETVAL;
     if (iovlen == 1 && iov[0].iov_len == NN_MSG) {
+      SV *obj = SvRV(ST(2));
       msg->len = RETVAL;
-      SvPVX(SvRV(ST(2))) = msg->buf;
-      SvCUR_set(SvRV(ST(2)), RETVAL);
+      SvPVX(obj) = msg->buf;
+      SvCUR_set(obj, RETVAL);
+      SvPOK_on(obj);
     }
     else {
       for (i = 0; i < iovlen; i++) {
@@ -372,8 +375,6 @@ perl_nn_messagebuf
 nn_allocmsg (size, type)
     size_t size
     int type
-  CLEANUP:
-    perl_nn_message_mg_find(aTHX_ SvRV(ST(0)))->len = size;
 
 const char *
 nn_strerror (errnum)
@@ -430,10 +431,11 @@ copy (sv, src)
   INIT:
     obj = SvRV(sv);
     buf = SvPV(src, len);
-    msg = perl_nn_message_mg_find(aTHX_ SvRV(sv));
+    msg = perl_nn_message_mg_find(aTHX_ obj);
     if (len > msg->len)
       croak("Trying to copy %d bytes into a message buffer of size %d", len, msg->len);
   CODE:
     memcpy(msg->buf, buf, len);
     SvPVX(obj) = msg->buf;
     SvCUR_set(obj, len);
+    SvPOK_on(obj);
