@@ -38,12 +38,20 @@ perl_nn_message_mg_dup (pTHX_ MAGIC *mg, CLONE_PARAMS *param)
   return 0;
 }
 
+static int
+perl_nn_message_mg_free (pTHX_ SV *sv, MAGIC *mg)
+{
+  struct perl_nn_message *msg = mg->mg_ptr;
+  nn_freemsg(msg->buf);
+  return 0;
+}
+
 static MGVTBL perl_nn_message_vtbl = {
   NULL, /* get */
   NULL, /* set */
   NULL, /* len */
   NULL, /* clear */
-  NULL, /* free */
+  perl_nn_message_mg_free, /* free */
   NULL, /* copy */
   perl_nn_message_mg_dup, /* dup */
   NULL /* local */
@@ -415,9 +423,3 @@ data (sv, foo, bar)
     RETVAL = newSVpv(msg->buf, msg->len);
   OUTPUT:
     RETVAL
-
-void
-DESTROY (sv)
-    SV *sv
-  CODE:
-    nn_freemsg(perl_nn_invalidate_message(aTHX_ sv)->buf);
