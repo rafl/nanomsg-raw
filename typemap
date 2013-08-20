@@ -19,5 +19,8 @@ T_PERL_NN_INT_BOOL
 T_PERL_NN_MESSAGEBUF
   if ($var == NULL)
     PERL_NN_SET_ERRNO;
-  else
-    SvPVX(perl_nn_upgrade_to_message(aTHX_ $arg)) = $var;
+  else {
+    struct perl_nn_message *msg = perl_nn_upgrade_to_message(aTHX_ $arg);
+    msg->buf = $var;
+    msg->len = size;
+  }

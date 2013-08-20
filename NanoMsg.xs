@@ -15,6 +15,56 @@ typedef int perl_nn_int;
 typedef int perl_nn_int_bool;
 typedef void * perl_nn_messagebuf;
 
+struct perl_nn_message {
+  void *buf;
+  size_t len;
+};
+
+static int
+perl_nn_message_mg_dup (pTHX_ MAGIC *mg, CLONE_PARAMS *param)
+{
+  struct perl_nn_message *dst;
+  struct perl_nn_message *src = (struct perl_nn_message *)mg->mg_ptr;
+
+  PERL_UNUSED_ARG(param);
+
+  Newx(dst, 1, struct perl_nn_message);
+  dst->len = src->len;
+  dst->buf = nn_allocmsg(src->len, 0); /* FIXME: alloc type */
+  memcpy(dst->buf, src->buf, src->len);
+
+  mg->mg_ptr = (char *)dst;
+
+  return 0;
+}
+
+static int
+perl_nn_message_mg_free (pTHX_ SV *sv, MAGIC *mg)
+{
+  struct perl_nn_message *msg = (struct perl_nn_message *)mg->mg_ptr;
+  PERL_UNUSED_ARG(sv);
+  nn_freemsg(msg->buf);
+  return 0;
+}
+
+static MGVTBL perl_nn_message_vtbl = {
+  NULL, /* get */
+  NULL, /* set */
+  NULL, /* len */
+  NULL, /* clear */
+  perl_nn_message_mg_free, /* free */
+  NULL, /* copy */
+  perl_nn_message_mg_dup, /* dup */
+  NULL /* local */
+};
+
+static struct perl_nn_message *
+perl_nn_message_mg_find (pTHX_ SV *sv)
+{
+  MAGIC *mg = mg_findext(sv, PERL_MAGIC_ext, &perl_nn_message_vtbl);
+  return (struct perl_nn_message *)mg->mg_ptr;
+}
+
 AV *symbol_names;
 
 XS_INTERNAL(XS_NanoMsg__Raw_nn_constant);
@@ -31,9 +81,11 @@ XS_INTERNAL(XS_NanoMsg__Raw_nn_constant)
   XSRETURN(1);
 }
 
-static SV *
+static struct perl_nn_message *
 perl_nn_upgrade_to_message (pTHX_ SV *sv)
 {
+  MAGIC *mg;
+  struct perl_nn_message *msg;
   SV *obj = newSV(0);
   sv_upgrade(sv, SVt_RV);
   if (SvROK(sv))
@@ -46,19 +98,42 @@ perl_nn_upgrade_to_message (pTHX_ SV *sv)
   SvLEN_set(obj, 0);
   sv_bless(sv, gv_stashpvs("NanoMsg::Raw::Message", GV_ADD));
   SvREADONLY_on(obj);
-  return obj;
+  Newxz(msg, 1, struct perl_nn_message);
+  mg = sv_magicext(obj, NULL, PERL_MAGIC_ext, &perl_nn_message_vtbl, (char *)msg, 0);
+  mg->mg_flags |= MGf_DUP;
+  return msg;
 }
 
-static void *
+static struct perl_nn_message *
 perl_nn_invalidate_message (pTHX_ SV *sv)
 {
+  MAGIC *mg, *prevmg, *moremg = NULL;
+  struct perl_nn_message *msg = NULL;
   SV *obj = SvRV(sv);
-  void *ret = SvPVX(obj);
   SvREADONLY_off(obj);
   SvPOK_off(obj);
   SvPVX(obj) = NULL;
   sv_bless(sv, gv_stashpvs("NanoMsg::Raw::Message::Freed", GV_ADD));
-  return ret;
+
+  for (prevmg = NULL, mg = SvMAGIC(obj); mg; prevmg = mg, mg = moremg) {
+    moremg = mg->mg_moremagic;
+    if (mg->mg_type == PERL_MAGIC_ext &&
+        mg->mg_virtual == &perl_nn_message_vtbl) {
+      if (prevmg)
+        prevmg->mg_moremagic = moremg;
+      else
+        SvMAGIC_set(obj, moremg);
+
+      mg->mg_moremagic = NULL;
+      msg = (struct perl_nn_message *)mg->mg_ptr;
+      Safefree(mg);
+
+      mg = prevmg;
+    }
+  }
+
+  assert(msg);
+  return msg;
 }
 
 static bool
@@ -151,7 +226,7 @@ nn_send (s, buf, flags)
     size_t len;
   INIT:
     if (perl_nn_is_message(aTHX_ buf)) {
-      c_buf = &SvPVX(SvRV(buf));
+      c_buf = &perl_nn_message_mg_find(aTHX_ SvRV(buf))->buf;
       len = NN_MSG;
     }
     else {
@@ -171,9 +246,11 @@ nn_recv (s, buf, len, flags)
     int flags
   PREINIT:
     void *c_buf;
+    struct perl_nn_message *msg;
   INIT:
     if (len == NN_MSG) {
-      c_buf = &SvPVX(perl_nn_upgrade_to_message(aTHX_ buf));
+      msg = perl_nn_upgrade_to_message(aTHX_ buf);
+      c_buf = &msg->buf;
     }
     else {
       if (!SvOK(buf))
@@ -189,8 +266,11 @@ nn_recv (s, buf, len, flags)
       XSRETURN_UNDEF;
     }
     if (len == NN_MSG) {
-      SvPOK_on(SvRV(buf));
-      SvCUR_set(SvRV(buf), RETVAL);
+      SV *obj = SvRV(buf);
+      msg->len = RETVAL;
+      SvPVX(obj) = msg->buf;
+      SvCUR_set(obj, RETVAL);
+      SvPOK_on(obj);
     }
     else {
       SvCUR_set(buf, (int)len < RETVAL ? (int)len : RETVAL);
@@ -213,7 +293,8 @@ nn_sendmsg (s, flags, ...)
     for (i = 0; i < iovlen; i++) {
       SV *sv = ST(i + 2);
       if (perl_nn_is_message(aTHX_ sv)) {
-        iov[i].iov_base = &SvPVX(SvRV(sv));
+        struct perl_nn_message *msg = perl_nn_message_mg_find(aTHX_ SvRV(sv));
+        iov[i].iov_base = &msg->buf;
         iov[i].iov_len = NN_MSG;
       }
       else {
@@ -241,6 +322,7 @@ nn_recvmsg (s, flags, ...)
     struct nn_iovec *iov;
     int iovlen, i;
     size_t nbytes;
+    struct perl_nn_message *msg;
   INIT:
     iovlen = (items - 2) / 2;
     Newx(iov, iovlen, struct nn_iovec);
@@ -249,7 +331,8 @@ nn_recvmsg (s, flags, ...)
       UV len = SvUV(ST(i*2 + 3));
       iov[i].iov_len = len;
       if (len == NN_MSG) {
-        iov[i].iov_base = &SvPVX(perl_nn_upgrade_to_message(aTHX_ svbuf));
+        msg = perl_nn_upgrade_to_message(aTHX_ svbuf);
+        iov[i].iov_base = &msg->buf;
       }
       else {
         if (!SvOK(svbuf))
@@ -271,7 +354,11 @@ nn_recvmsg (s, flags, ...)
     }
     nbytes = RETVAL;
     if (iovlen == 1 && iov[0].iov_len == NN_MSG) {
-      SvCUR_set(SvRV(ST(2)), RETVAL);
+      SV *obj = SvRV(ST(2));
+      msg->len = RETVAL;
+      SvPVX(obj) = msg->buf;
+      SvCUR_set(obj, RETVAL);
+      SvPOK_on(obj);
     }
     else {
       for (i = 0; i < iovlen; i++) {
@@ -288,8 +375,6 @@ perl_nn_messagebuf
 nn_allocmsg (size, type)
     size_t size
     int type
-  CLEANUP:
-    SvUVX(SvRV(ST(0))) = size;
 
 const char *
 nn_strerror (errnum)
@@ -342,17 +427,15 @@ copy (sv, src)
     const void *buf;
     STRLEN len;
     SV *obj;
+    struct perl_nn_message *msg;
   INIT:
     obj = SvRV(sv);
     buf = SvPV(src, len);
-    if (len > SvUVX(obj))
-      croak("Trying to copy %d bytes into a message buffer of size %d", len, SvUVX(obj));
+    msg = perl_nn_message_mg_find(aTHX_ obj);
+    if (len > msg->len)
+      croak("Trying to copy %d bytes into a message buffer of size %d", len, msg->len);
   CODE:
-    memcpy(SvPVX(obj), buf, len);
+    memcpy(msg->buf, buf, len);
+    SvPVX(obj) = msg->buf;
     SvCUR_set(obj, len);
-
-void
-DESTROY (sv)
-    SV *sv
-  CODE:
-    nn_freemsg(perl_nn_invalidate_message(aTHX_ sv));
+    SvPOK_on(obj);
