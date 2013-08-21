@@ -1,6 +1,13 @@
 use strict;
 use warnings;
 use Test::More 0.89;
+
+BEGIN {
+    use Config;
+    plan skip_all => "Perl not compiled with 'useithreads'"
+        unless $Config{'useithreads'};
+}
+
 use Test::SharedFork;
 
 use threads;
