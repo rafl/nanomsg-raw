@@ -20,10 +20,8 @@ my $socket_address_tcp = 'tcp://127.0.0.1:' . empty_port;
 
     ok nn_setsockopt($pair, NN_SOL_SOCKET, NN_SNDTIMEO, 100);
 
-    my $ret = nn_send($pair, 'ABC', 0);
-    my $err = $!;
-    is $ret, undef;
-    ok $err == EAGAIN;
+    is nn_send($pair, 'ABC', 0), undef;
+    ok nn_errno == EAGAIN;
 
     ok nn_close $_ for $pull, $pair;
 }
@@ -39,10 +37,8 @@ my $socket_address_tcp = 'tcp://127.0.0.1:' . empty_port;
 
     ok nn_setsockopt($pair, NN_SOL_SOCKET, NN_SNDTIMEO, 100);
 
-    my $ret = nn_send($pair, 'ABC', 0);
-    my $err = $!;
-    is $ret, undef;
-    ok $err == EAGAIN;
+    is nn_send($pair, 'ABC', 0), undef;
+    ok nn_errno == EAGAIN;
 
     ok nn_close $_ for $pull, $pair;
 }
@@ -58,10 +54,8 @@ my $socket_address_tcp = 'tcp://127.0.0.1:' . empty_port;
 
     ok nn_setsockopt($pair, NN_SOL_SOCKET, NN_SNDTIMEO, 100);
 
-    my $ret = nn_send($pair, 'ABC', 0);
-    my $err = $!;
-    is $ret, undef;
-    ok $err == EAGAIN;
+    is nn_send($pair, 'ABC', 0), undef;
+    ok nn_errno == EAGAIN;
 
     ok nn_close $_ for $pull, $pair;
 }
@@ -77,10 +71,8 @@ my $socket_address_tcp = 'tcp://127.0.0.1:' . empty_port;
 
     ok nn_setsockopt($pair, NN_SOL_SOCKET, NN_SNDTIMEO, 100);
 
-    my $ret = nn_send($pair, 'ABC', 0);
-    my $err = $!;
-    is $ret, undef;
-    ok $err == EAGAIN;
+    is nn_send($pair, 'ABC', 0), undef;
+    ok nn_errno == EAGAIN;
 
     ok nn_close $_ for $pull, $pair;
 }

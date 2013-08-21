@@ -29,9 +29,8 @@ my $socket_address = "tcp://$host:$port";
 
     is unpack('I', nn_getsockopt($sc, NN_TCP, NN_TCP_NODELAY)), 0;
 
-    my $ret = nn_setsockopt($sc, NN_TCP, NN_TCP_NODELAY, 2);
-    ok $! == EINVAL;
-    ok !$ret;
+    ok !nn_setsockopt($sc, NN_TCP, NN_TCP_NODELAY, 2);
+    ok nn_errno == EINVAL;
 
     ok nn_setsockopt($sc, NN_TCP, NN_TCP_NODELAY, 1);
     is unpack('I', nn_getsockopt($sc, NN_TCP, NN_TCP_NODELAY)), 1;
@@ -53,9 +52,8 @@ my $socket_address = "tcp://$host:$port";
     for my $t ([\&nn_connect, \%invalid_connect_addresses],
                [\&nn_bind,    \%invalid_bind_addresses]) {
         for my $addr (keys %{ $t->[1] }) {
-            my $ret = $t->[0]->($sc, $addr);
-            ok $! == $t->[1]->{$addr};
-            is $ret, undef;
+            is $t->[0]->($sc, $addr), undef;
+            ok nn_errno == $t->[1]->{$addr};
         }
     }
 
