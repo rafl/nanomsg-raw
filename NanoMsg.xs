@@ -239,7 +239,7 @@ nn_send (s, buf, flags = 0)
       perl_nn_invalidate_message(aTHX_ buf);
 
 int
-nn_recv (s, buf, len, flags = 0)
+nn_recv (s, buf, len = NN_MSG, flags = 0)
     int s
     SV *buf
     size_t len
