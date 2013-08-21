@@ -1,15 +1,13 @@
 use strict;
 use warnings;
+use Test::More 0.89;
 
 BEGIN {
     use Config;
-    if (!$Config{'useithreads'}) {
-        print("1..0 # SKIP Perl not compiled with 'useithreads'\n");
-        exit(0);
-    }
+    plan skip_all => "Perl not compiled with 'useithreads'"
+        unless $Config{'useithreads'};
 }
 
-use Test::More 0.89;
 use Test::SharedFork;
 
 use threads;
