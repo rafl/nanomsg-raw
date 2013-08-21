@@ -20,9 +20,9 @@ my $socket_address = 'inproc://test';
     ok defined nn_connect($req2, $socket_address);
 
     is nn_send($rep1, 'ABC', 0), undef;
-    ok $! == EFSM;
+    ok nn_errno == EFSM;
     is nn_recv($req1, my $buf, 7, 0), undef;
-    ok $! == EFSM;
+    ok nn_errno == EFSM;
 
     is nn_send($req2, 'ABC', 0), 3;
     is nn_recv($rep1, $buf, 3, 0), 3;
