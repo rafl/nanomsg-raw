@@ -217,7 +217,7 @@ nn_shutdown (s, how)
     int how
 
 perl_nn_int
-nn_send (s, buf, flags)
+nn_send (s, buf, flags = 0)
     int s
     SV *buf
     int flags
@@ -239,7 +239,7 @@ nn_send (s, buf, flags)
       perl_nn_invalidate_message(aTHX_ buf);
 
 int
-nn_recv (s, buf, len, flags)
+nn_recv (s, buf, len, flags = 0)
     int s
     SV *buf
     size_t len
