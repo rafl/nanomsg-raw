@@ -29,17 +29,15 @@ is nn_send($respondent[1], 'DEF', 0), 3;
 is nn_recv($surveyor, $buf, 3, 0), 3;
 is nn_recv($surveyor, $buf, 3, 0), 3;
 
-my $ret = nn_recv($surveyor, $buf, 3, 0);
-ok $! == EFSM;
-is $ret, undef;
+is nn_recv($surveyor, $buf, 3, 0), undef;
+ok nn_errno == EFSM;
 
 is nn_recv($respondent[2], $buf, 3, 0), 3;
 is nn_send($respondent[2], 'GHI', 0), 3;
 
 is nn_send($surveyor, 'ABC', 0), 3;
-$ret = nn_recv($surveyor, $buf, 3, 0);
-ok $! == EFSM;
-is $ret, undef;
+is nn_recv($surveyor, $buf, 3, 0), undef;
+ok nn_errno == EFSM;
 
 ok nn_close $_ for $surveyor, @respondent;
 

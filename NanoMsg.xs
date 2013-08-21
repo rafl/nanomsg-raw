@@ -5,10 +5,12 @@
 #include <nanomsg/nn.h>
 #include <nanomsg/pair.h>
 
+SV *errno_sv;
+
 #define PERL_NN_SET_ERRNO STMT_START { \
-  SV *errsv = get_sv("!", GV_ADD); \
-  sv_setiv(errsv, errno); \
-  sv_setpv(errsv, nn_strerror(errno)); \
+  sv_setpv(errno_sv, nn_strerror(errno)); \
+  SvIV_set(errno_sv, errno); \
+  SvIOK_on(errno_sv); \
 } STMT_END
 
 typedef int perl_nn_int;
@@ -380,6 +382,13 @@ const char *
 nn_strerror (errnum)
     int errnum
 
+SV *
+nn_errno ()
+  CODE:
+    RETVAL = SvREFCNT_inc(errno_sv);
+  OUTPUT:
+    RETVAL
+
 perl_nn_int_bool
 nn_device (s1, s2)
     int s1
@@ -398,6 +407,8 @@ _symbols ()
 
 BOOT:
   symbol_names = newAV();
+  errno_sv = newSV(0);
+  sv_upgrade(errno_sv, SVt_PVIV);
   {
     CV *cv;
     const char *sym;
