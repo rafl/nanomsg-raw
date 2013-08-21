@@ -87,7 +87,7 @@ perl_nn_upgrade_to_message (pTHX_ SV *sv)
   MAGIC *mg;
   struct perl_nn_message *msg;
   SV *obj = newSV(0);
-  sv_upgrade(sv, SVt_RV);
+  SvUPGRADE(sv, SVt_RV);
   if (SvROK(sv))
     SvREFCNT_dec(SvRV(sv));
   SvRV_set(sv, obj);
