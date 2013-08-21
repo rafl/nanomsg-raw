@@ -433,7 +433,7 @@ copy (sv, src)
     buf = SvPV(src, len);
     msg = perl_nn_message_mg_find(aTHX_ obj);
     if (len > msg->len)
-      croak("Trying to copy %d bytes into a message buffer of size %d", len, msg->len);
+      croak("Trying to copy %zd bytes into a message buffer of size %zd", len, msg->len);
   CODE:
     memcpy(msg->buf, buf, len);
     SvPVX(obj) = msg->buf;
