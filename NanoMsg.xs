@@ -380,7 +380,7 @@ const char *
 nn_strerror (errnum)
     int errnum
 
-perl_nn_int
+perl_nn_int_bool
 nn_device (s1, s2)
     int s1
     int s2
