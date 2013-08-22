@@ -20,58 +20,58 @@ our @EXPORT = (
 =func nn_socket($domain, $protocol)
 
     my $s = nn_socket(AF_SP, NN_PAIR);
-    die unless defined $s;
+    die nn_errno unless defined $s;
 
 =func nn_close($s)
 
-    nn_close($s) or die;
+    nn_close($s) or die nn_errno;
 
 =func nn_setsockopt($s, $level, $option, $value)
 
-    nn_setsockopt($s, NN_SOL_SOCKET, NN_LINGER, 1000) or die;
-    nn_setsockopt($s, NN_SOL_SOCKET, NN_SUB_SUBSCRIBE, 'ABC') or die;
+    nn_setsockopt($s, NN_SOL_SOCKET, NN_LINGER, 1000) or die nn_errno;
+    nn_setsockopt($s, NN_SOL_SOCKET, NN_SUB_SUBSCRIBE, 'ABC') or die nn_errno;
 
 =func nn_getsockopt($s, $leve, $option)
 
-    my $linger = unpack 'I', nn_getsockopt($s, NN_SOL_SOCKET, NN_LINGER) || die;
+    my $linger = unpack 'I', nn_getsockopt($s, NN_SOL_SOCKET, NN_LINGER) || die nn_errno;
 
 =func nn_bind($s, $addr)
 
     my $eid = nn_bind($s, 'inproc://test');
-    die unless defined $eid;
+    die nn_errno unless defined $eid;
 
 =func nn_connect($s, $addr)
 
     my $eid = nn_connect($s, 'inproc://test');
-    die unless defined $eid;
+    die nn_errno unless defined $eid;
 
 =func nn_shutdown($s, $eid)
 
-    nn_shutdown($s, $eid) or die;
+    nn_shutdown($s, $eid) or die nn_errno;
 
 =func nn_send($s, $data, $flags=0)
 
     my $bytes_sent = nn_send($s, 'foo');
-    die if $bytes_sent < 0;
+    die nn_errno unless defined $bytes_sent;
 
 =func nn_recv($s, $data, $length, $flags=0)
 
     my $bytes_received = nn_recv($s, my $buf, 256);
-    die if $bytes_received < 0;
+    die nn_errno unless defined $bytes_received;
 
 =func nn_sendmsg($s, $flags, $data1, $data2, ..., $dataN)
 
     my $bytes_sent = nn_sendmsg($s, 0, 'foo', 'bar');
-    die if $bytes_sent < 0;
+    die nn_errno unless defined $bytes_sent;
 
 =func nn_recvmsg($s, $flags, $data1 => $len1, $data2 => $len2, ..., $dataN => $lenN)
 
     my $bytes_received = nn_recvmsg($s, 0, my $buf1 => 256, my $buf2 => 1024);
-    die if $bytes_received < 0;
+    die nn_errno unless defined $bytes_received;
 
 =func nn_allocmsg($size, $type)
 
-    my $msg = nn_allocmsg(3, 0);
+    my $msg = nn_allocmsg(3, 0) or die nn_errno;
     $msg->copy('foo');
     nn_send($s, $msg);
 
