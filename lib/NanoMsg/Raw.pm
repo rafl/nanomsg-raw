@@ -31,7 +31,49 @@ our @EXPORT = (
     nn_recv($sc, my $buf);
     is $buf, 'bar';
 
+=head1 WARNING
+
+B<nanomsg, the c library this module is based on, is still in alpha stage!>
+
 =head1 DESCRIPTION
+
+C<NanoMsg::Raw> is a binding to the C<nanomsg> C library. The goal of this
+module is to provide a very low-level and manual interface to all the
+functionality of the nanomsg library. It doesn't intend to provide a convenient
+high-level API, integration with event loops, or the like. Those are intended to
+be implemented as separate abstractions on top of C<NanoMsg::Raw>.
+
+The nanomsg C library is a high-performance implementation of several
+"scalability protocols". Scalability protocol's job is to define how multiple
+applications communicate to form a single distributed
+application. Implementation of following scalability protocols is available at
+the moment:
+
+=for :list
+* C<PAIR>
+simple one-to-one communication
+* C<BUS>
+simple many-to-many communication
+* C<REQREP>
+allows to build clusters of stateless services to process user requests
+* C<PUBSUB>
+distributes messages to large sets of interested subscribers
+* C<FANIN>
+aggregates messages from multiple sources
+* C<FANOUT>
+load balances messages among many destinations
+* C<SURVEY>
+allows to query state of multiple applications in a single go
+
+Scalability protocols are layered on top of transport layer in the network
+stack. At the moment, nanomsg library supports following transports:
+
+* C<INPROC>
+transport within a process (between threads, modules etc.)
+* C<IPC>
+transport between processes on a single machine
+* C<TCP>
+network transport via TCP
 
 =func nn_socket($domain, $protocol)
 
@@ -100,7 +142,7 @@ The provided socket is invalid.
 * C<EINTR>
 Operation was interrupted by a signal. The socket is not fully closed
 yet. Operation can be re-started by calling C<nn_close> again.
-    
+
 =func nn_setsockopt($s, $level, $option, $value)
 
     nn_setsockopt($s, NN_SOL_SOCKET, NN_LINGER, 1000) or die nn_errno;
