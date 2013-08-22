@@ -323,6 +323,26 @@ The library is terminating.
 
     nn_shutdown($s, $eid) or die nn_errno;
 
+Removes an endpoint from socket C<$s>. The C<eid> parameter specifies the ID of
+the endpoint to remove as returned by prior call to C<nn_bind> or
+C<nn_connect>. The library will try to deliver any outstanding outbound messages
+to this endpoint for the time specified by the C<NN_LINGER> socket option. The
+call will block in the meantime.
+
+If the function succeeds, a true value is returned. Otherwise, C<undef> is
+returned and C<nn_errno> is set to to one of the values defined below.
+
+=for :list
+* C<EBADF>
+The provided socket is invalid.
+* C<EINVAL>
+The how parameter doesn’t correspond to an active endpoint.
+* C<EINTR>
+Operation was interrupted by a signal. The endpoint is not fully closed
+yet. Operation can be re-started by calling C<nn_shutdown> again.
+* C<ETERM>
+The library is terminating.
+
 =func nn_send($s, $data, $flags=0)
 
     my $bytes_sent = nn_send($s, 'foo');
