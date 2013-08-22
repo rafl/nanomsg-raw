@@ -393,10 +393,49 @@ is hit, this error will be returned.
 * C<ETERM>
 The library is terminating.
 
-=func nn_recv($s, $data, $length, $flags=0)
+=func nn_recv($s, $data, $length=NN_MSG, $flags=0)
 
     my $bytes_received = nn_recv($s, my $buf, 256);
     die nn_errno unless defined $bytes_received;
+
+Receive a message from the socket C<$s> and store it in the buffer C<$buf>. Any
+bytes exceeding the length specified by the C<$length> argument will be
+truncated.
+
+Alternatively, C<nn_recv> can allocate a message buffer instance for you. To do
+so, set the C<$length> parameter to C<NN_MSG> (the default).
+
+The C<$flags> argument, which defaults to C<0>, is a combination of the flags defined below:
+
+=for :list
+* C<NN_DONTWAIT>
+Specifies that the operation should be performed in non-blocking mode. If the
+message cannot be received straight away, the function will fail with
+C<nn_errno> set to C<EAGAIN>.
+
+If the function succeeds number of bytes in the message is returned. Otherwise,
+C<undef> is returned and C<nn_errno> is set to to one of the values defined
+below.
+
+=for :list
+* C<EBADF>
+The provided socket is invalid.
+* C<ENOTSUP>
+The operation is not supported by this socket type.
+* C<EFSM>
+The operation cannot be performed on this socket at the moment because socket is
+not in the appropriate state. This error may occur with socket types that switch
+between several states.
+* C<EAGAIN>
+Non-blocking mode was requested and there’s no message to receive at the moment.
+* C<EINTR>
+The operation was interrupted by delivery of a signal before the message was
+received.
+* C<ETIMEDOUT>
+Individual socket types may define their own specific timeouts. If such timeout
+is hit this error will be returned.
+* C<ETERM>
+The library is terminating.
 
 =func nn_sendmsg($s, $flags, $data1, $data2, ..., $dataN)
 
