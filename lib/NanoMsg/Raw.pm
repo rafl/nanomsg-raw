@@ -348,6 +348,51 @@ The library is terminating.
     my $bytes_sent = nn_send($s, 'foo');
     die nn_errno unless defined $bytes_sent;
 
+This function will send a message containing the provided C<$data> to the socket
+C<$s>.
+
+C<$data> can either be anything that can be used as a byte string in perl or a
+message buffer instance allocated by C<nn_allocmsg>. In case of a message buffer
+instance the instance will be deallocated and invalidated by nn_send
+function. The buffer will be an instance of C<NanoMsg::Raw::Message::Freed>
+after the call to C<nn_send>.
+
+Which of the peers the message will be sent to is determined by the particular
+socket type.
+
+The C<$flags> argument, which defaults to C<0>, is a combination of the flags
+defined below:
+
+=for :list
+* C<NN_DONTWAIT>
+Specifies that the operation should be performed in non-blocking mode. If the
+message cannot be sent straight away, the function will fail with C<nn_errno>
+set to C<EAGAIN>.
+
+If the function succeeds, the number of bytes in the message is
+returned. Otherwise, a C<undef> is returned and C<nn_errno> is set to to one of
+the values defined below.
+
+=for :list
+* C<EBADF>
+The provided socket is invalid.
+* C<ENOTSUP>
+The operation is not supported by this socket type.
+* C<EFSM>
+The operation cannot be performed on this socket at the moment because the
+socket is not in the appropriate state. This error may occur with socket types
+that switch between several states.
+* C<EAGAIN>
+Non-blocking mode was requested and the message cannot be sent at the moment.
+* C<EINTR>
+The operation was interrupted by delivery of a signal before the message was
+sent.
+* C<ETIMEDOUT>
+Individual socket types may define their own specific timeouts. If such timeout
+is hit, this error will be returned.
+* C<ETERM>
+The library is terminating.
+
 =func nn_recv($s, $data, $length, $flags=0)
 
     my $bytes_received = nn_recv($s, my $buf, 256);
