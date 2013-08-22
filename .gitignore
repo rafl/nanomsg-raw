@@ -6,3 +6,4 @@ Makefile*
 !Makefile.PL
 /Raw.*
 !/Raw.xs
+NanoMsg-Raw-*
