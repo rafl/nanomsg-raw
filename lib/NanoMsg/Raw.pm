@@ -500,6 +500,29 @@ data.
     my $bytes_received = nn_recvmsg($s, 0, my $buf1 => 256, my $buf2 => 1024);
     die nn_errno unless defined $bytes_received;
 
+This function is a fine-grained alternative to C<nn_recv>. It allows receiving a
+single message into multiple data buffers of different sizes, eliminating the
+need to create copies of part of the received message in some cases.
+
+The scalars in which to receive the message data (C<$buf1>, C<$buf2>, ...,
+C<$bufN>) will be filled with as many bytes of data as is specified by the
+length parameter following them in the argument list (C<$len1>, C<$len2>, ...,
+C<$lenN>).
+
+Alternatively, C<nn_recvmsg> can allocate a message buffer instance for you. To
+do so, set the length parameter of a buffer to to C<NN_MSG>. In this case, only
+one receive buffer can be provided.
+
+The C<$flags> argument is a combination of the flags defined below:
+
+=for :list
+* C<NN_DONTWAIT>
+Specifies that the operation should be performed in non-blocking mode. If the
+message cannot be received straight away, the function will fail with
+C<nn_errno> set to C<EAGAIN>.
+
+In the future, C<nn_recvmsg> might allow for receiving additional control data.
+
 =func nn_allocmsg($size, $type)
 
     my $msg = nn_allocmsg(3, 0) or die nn_errno;
