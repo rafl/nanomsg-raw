@@ -240,7 +240,7 @@ C<transport://address>. The C<transport> specifies the underlying transport
 protocol to use. The meaning of the C<address> part is specific to the
 underlying transport protocol.
 
-See L</Protocols> for a list of available transport protocols.
+See L</Transports> for a list of available transport protocols.
 
 The maximum length of the C<$addr> parameter is specified by C<NN_SOCKADDR_MAX>
 constant.
@@ -749,6 +749,82 @@ from all other nodes in the topology are fair-queued in the socket.
 =head3 Socket Options
 
 There are no options defined at the moment.
+
+=head1 Transports
+
+=head2 In-process transport
+
+The in-process transport allows to send messages between threads or modules inside a
+process. In-process address is an arbitrary case-sensitive string preceded by
+C<inproc://> protocol specifier. All in-process addresses are visible from any
+module within the process. They are not visible from outside of the process.
+
+The overall buffer size for an inproc connection is determined by the
+C<NN_RCVBUF> socket option on the receiving end of the connection. The
+C<NN_SNDBUF> socket option is ignored. In addition to the buffer, one message of
+arbitrary size will fit into the buffer. That way, even messages larger than the
+buffer can be transfered via inproc connection.
+
+=head2 Inter-process transport
+
+The inter-process transport allows for sending messages between processes within
+a single box. The implementation uses native IPC mechanism provided by the local
+operating system and the IPC addresses are thus OS-specific.
+
+On POSIX-compliant systems, UNIX domain sockets are used and IPC addresses are
+file references. Note that both relative (C<ipc://test.ipc>) and absolute
+(C<ipc:///tmp/test.ipc>) paths may be used. Also note that access rights on the
+IPC files must be set in such a way that the appropriate applications can
+actually use them.
+
+On Windows, named pipes are used for IPC. IPC address is an arbitrary
+case-insensitive string containing any character except for
+backslash. Internally, address C<ipc://test> means that named pipe
+C<\\.\pipe\test> will be used.
+
+=head2 TCP transport
+
+The TCP transport allows for passing message over the network using simple
+reliable one-to-one connections. TCP is the most widely used transport protocol,
+it is virtually ubiquitous and thus the transport of choice for communication
+over the network.
+
+When binding a TCP socket address of the form C<tcp://interface:port> should be
+used. Port is the TCP port number to use. Interface is one of the following
+(optionally placed within square brackets):
+
+=for :list
+* Asterisk character (*) meaning all local network interfaces.
+* IPv4 address of a local network interface in numeric form (192.168.0.111).
+* IPv6 address of a local network interface in numeric form (::1).
+* Interface name, as defined by operating system.
+
+When connecting a TCP socket address of the form C<tcp://interface;address:port>
+should be used. Port is the TCP port number to use. Interface is optional and
+specifies which local network interface to use. If not specified, OS will select
+an appropriate interface itself. If specified it can be one of the following
+(optionally placed within square brackets):
+
+=for :list
+* IPv4 address of a local network interface in numeric form (192.168.0.111).
+* IPv6 address of a local network interface in numeric form (::1).
+* Interface name, as defined by operating system (eth0).
+
+Finally, address specifies the remote address to connect to. It can be one of
+the following (optionally placed within square brackets):
+
+=for :list
+* IPv4 address of a remote network interface in numeric form (192.168.0.111).
+* IPv6 address of a remote network interface in numeric form (::1).
+* The DNS name of the remote box.
+
+=head3 Socket Options
+
+=for :list
+* C<NN_TCP_NODELAY>
+This option, when set to 1, disables Nagle’s algorithm. It also disables
+delaying of TCP acknowledgments. Using this option improves latency at the
+expense of throughput. Type of this option is int. The default value is 0.
 
 =cut
 
