@@ -476,6 +476,16 @@ Supplied allocation type is invalid.
 * C<ENOMEM>
 Not enough memory to allocate the message.
 
+=func nn_errno()
+
+Returns value of C<errno> after the last call to any nanomsg function in the
+current thread. This function can be used in the same way the C<$!> global
+variable is be used for many other system and library calls.
+
+The return value can be used in numeric context, for example to compare it with
+error code constants such as C<EAGAIN>, or in a string context, to retrieve a
+textual message describing the error.
+
 =func nn_device($s1, $s2)
 
     nn_device($s1, $s2) or die;
