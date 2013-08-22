@@ -353,7 +353,7 @@ C<$s>.
 
 C<$data> can either be anything that can be used as a byte string in perl or a
 message buffer instance allocated by C<nn_allocmsg>. In case of a message buffer
-instance the instance will be deallocated and invalidated by nn_send
+instance the instance will be deallocated and invalidated by the C<nn_send>
 function. The buffer will be an instance of C<NanoMsg::Raw::Message::Freed>
 after the call to C<nn_send>.
 
