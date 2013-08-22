@@ -453,6 +453,29 @@ The library is terminating.
     $msg->copy('foo');
     nn_send($s, $msg);
 
+Allocate a message of the specified C<$size> to be sent in zero-copy
+fashion. The content of the message is undefined after allocation and it should
+be filled in by the user. While C<nn_send> and C<nn_sendmsg> allow to send
+arbitrary buffers, buffers allocated using C<nn_allocmsg> can be more efficient
+for large messages as they allow for using zero-copy techniques.
+
+The C<$type> parameter specifies type of allocation mechanism to use. Zero is
+the default one. However, individual transport mechanisms may define their own
+allocation mechanisms, such as allocating in shared memory or allocating a
+memory block pinned down to a physical memory address. Such allocation, when
+used with the transport that defines them, should be more efficient than the
+default allocation mechanism.
+
+If the function succeeds a newly allocated message buffer instance (an object
+instance of the class L<NanoMsg::Raw::Message>) is returned. Otherwise, C<undef>
+is returned and C<nn_errno> is set to to one of the values defined below.
+
+=for :list
+* C<EINVAL>
+Supplied allocation type is invalid.
+* C<ENOMEM>
+Not enough memory to allocate the message.
+
 =func nn_device($s1, $s2)
 
     nn_device($s1, $s2) or die;
