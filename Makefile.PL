@@ -3,7 +3,7 @@ use warnings;
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
-    NAME      => 'NanoMsg',
+    NAME      => 'NanoMsg::Raw',
     LIBS      => '-lnanomsg',
     PREREQ_PM => {
         'Test::More'       => '0.89',
