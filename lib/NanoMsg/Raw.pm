@@ -1,4 +1,5 @@
 package NanoMsg::Raw;
+# ABSTRACT: Low-level interface to the nanomsg scalability protocols library
 
 use strict;
 use warnings;
@@ -16,6 +17,19 @@ our @EXPORT = (
     (map { "nn_$_" } qw(socket close setsockopt getsockopt bind connect shutdown
                         send recv sendmsg recvmsg allocmsg strerror device term errno)),
 );
+
+=head1 SYNOPSIS
+
+    use NanoMsg::Raw;
+
+    my $sb = nn_socket(AF_SP, NN_PAIR);
+    nn_bind($sb, 'inproc://foo');
+    nn_send($sb, 'bar');
+
+    my $sc = nn_socket(AF_SP, NN_PAIR);
+    nn_connect($sc, 'inproc://foo');
+    nn_recv($sc, my $buf);
+    is $buf, 'bar';
 
 =func nn_socket($domain, $protocol)
 
