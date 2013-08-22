@@ -405,7 +405,8 @@ truncated.
 Alternatively, C<nn_recv> can allocate a message buffer instance for you. To do
 so, set the C<$length> parameter to C<NN_MSG> (the default).
 
-The C<$flags> argument, which defaults to C<0>, is a combination of the flags defined below:
+The C<$flags> argument, which defaults to C<0>, is a combination of the flags
+defined below:
 
 =for :list
 * C<NN_DONTWAIT>
