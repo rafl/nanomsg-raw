@@ -603,6 +603,153 @@ If waiting for C<NN_SNDFD> or C<NN_RCVFD> using a polling function, such as
 C<poll> or C<select>, the call will unblock with both C<NN_SNDFD> and
 C<NN_RCVFD> signaled.
 
+=head1 Protocols
+
+=head2 One-to-one protocol
+
+Pair protocol is the simplest and least scalable scalability protocol. It allows
+scaling by breaking the application in exactly two pieces. For example, if a
+monolithic application handles both accounting and agenda of HR department, it
+can be split into two applications (accounting vs. HR) that are run on two
+separate servers. These applications can then communicate via PAIR sockets.
+
+The downside of this protocol is that its scaling properties are very
+limited. Splitting the application into two pieces allows to scale to two
+servers. To add the third server to the cluster, application has to be split
+once more, say be separating HR functionality into hiring module and salary
+computation module. Whenever possible, try to use one of the more scalable
+protocols instead.
+
+=head3 Socket Types
+
+=for :list
+* C<NN_PAIR>
+Socket for communication with exactly one peer. Each party can send messages at
+any time. If the peer is not available or send buffer is full subsequent calls
+to C<nn_send> will block until it’s possible to send the message.
+
+=head3 Socket Options
+
+No protocol-specific socket options are defined at the moment.
+
+=head2 Request/reply protocol
+
+This protocol is used to distribute the workload among multiple stateless workers.
+
+=head3 Socket Types
+
+=for :list
+* C<NN_REQ>
+Used to implement the client application that sends requests and receives
+replies.
+* C<NN_REP>
+Used to implement the stateless worker that receives requests and sends replies.
+
+=head3 Socket Options
+
+=for :list
+* C<NN_REQ_RESEND_IVL>
+This option is defined on the full REQ socket. If a reply is not received in
+specified amount of milliseconds, the request will be automatically resent. The
+type of this option is int. Default value is 60000 (1 minute).
+
+=head2 Publish/subscribe protocol
+
+Broadcasts messages to multiple destinations.
+
+=head3 Socket Types
+
+=for :list
+* C<NN_PUB>
+This socket is used to distribute messages to multiple destinations. Receive
+operation is not defined.
+* C<NN_SUB>
+Receives messages from the publisher. Only messages that the socket is
+subscribed to are received. When the socket is created there are no
+subscriptions and thus no messages will be received. Send operation is not
+defined on this socket. The socket can be connected to at most one peer.
+
+=head3 Socket Options
+
+=for :list
+* C<NN_SUB_SUBSCRIBE>
+Defined on full SUB socket. Subscribes for a particular topic. Type of the
+option is string.
+* C<NN_SUB_UNSUBSCRIBE>
+Defined on full SUB socket. Unsubscribes from a particular topic. Type of the
+option is string.
+
+=head2 Survey protocol
+
+Allows to broadcast a survey to multiple locations and gather the responses.
+
+=head3 Socket Types
+
+=for :list
+* C<NN_SURVEYOR>
+Used to send the survey. The survey is delivered to all the connected
+respondents. Once the query is sent, the socket can be used to receive the
+responses. When the survey deadline expires, receive will return the
+C<ETIMEDOUT> error.
+* C<NN_RESPONDENT>
+Use to respond to the survey. Survey is received using receive function,
+response is sent using send function. This socket can be connected to at most
+one peer.
+
+=head3 Socket Options
+
+=for :list
+* C<NN_SURVEYOR_DEADLINE>
+Specifies how long to wait for responses to the survey. Once the deadline
+expires, receive function will return the C<ETIMEDOUT> error and all subsequent
+responses to the survey will be silently dropped. The deadline is measured in
+milliseconds. Option type is int. Default value is 1000 (1 second).
+
+=head2 Pipeline protocol
+
+Fair queues messages from the previous processing step and load balances them
+among instances of the next processing step.
+
+=head3 Socket Types
+
+=for :list
+* C<NN_PUSH>
+This socket is used to send messages to a cluster of load-balanced
+nodes. Receive operation is not implemented on this socket type.
+* C<NN_PULL>
+This socket is used to receive a message from a cluster of nodes. Send operation
+is not implemented on this socket type.
+
+=head3 Socket Options
+
+No protocol-specific socket options are defined at the moment.
+
+=head2 Message bus protocol
+
+Broadcasts messages from any node to all other nodes in the topology. The socket
+should never receives messages that it sent itself.
+
+This pattern scales only to local level (within a single machine or within a
+single LAN). Trying to scale it further can result in overloading individual
+nodes with messages.
+
+B<WARNING>: For bus topology to function correctly, the user is responsible for
+ensuring that path from each node to any other node exists within the topology.
+
+Raw (C<AF_SP_RAW>) BUS socket never send the message to the peer it was received
+from.
+
+=head3 Socket Types
+
+=for :list
+* C<NN_BUS>
+Sent messages are distributed to all nodes in the topology. Incoming messages
+from all other nodes in the topology are fair-queued in the socket.
+
+=head3 Socket Options
+
+There are no options defined at the moment.
+
 =cut
 
 1;
