@@ -515,6 +515,18 @@ The library is terminating.
 
     nn_term();
 
+To help with shutdown of multi-threaded programs the C<nn_term> function is
+provided. It informs all the open sockets that process termination is underway.
+
+If a socket is blocked inside a blocking function, such as C<nn_recv>, it will
+be unblocked and the C<ETERM> error will be returned to the user. Similarly, any
+subsequent attempt to invoke a socket function other than C<nn_close> after
+C<nn_term> was called will result in an C<ETERM> error.
+
+If waiting for C<NN_SNDFD> or C<NN_RCVFD> using a polling function, such as
+C<poll> or C<select>, the call will unblock with both C<NN_SNDFD> and
+C<NN_RCVFD> signaled.
+
 =cut
 
 1;
