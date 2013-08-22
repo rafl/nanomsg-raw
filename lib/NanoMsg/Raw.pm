@@ -442,6 +442,58 @@ The library is terminating.
     my $bytes_sent = nn_sendmsg($s, 0, 'foo', 'bar');
     die nn_errno unless defined $bytes_sent;
 
+This function is a fine-grained alternative to C<nn_send>. It allows sending
+multiple data buffers that make up a single message without having to create
+another temporary buffer to hold the concatenation of the different message
+parts.
+
+The scalars containing the data to be sent (C<$data1>, C<$data2>, ...,
+C<$dataN>) can either be anything that can be used as a byte string in perl or a
+message buffer instance allocated by C<nn_allocmsg>. In case of a message buffer
+instance the instance will be deallocated and invalidated by the C<nn_sendmsg>
+function. The buffers will be a instances of C<NanoMsg::Raw::Message::Freed>
+after the call to C<nn_sendmsg>.
+
+When using message buffer instances, only one buffer may be provided.
+
+To which of the peers will the message be sent to is determined by the
+particular socket type.
+
+The C<$flags> argument is a combination of the flags defined below:
+
+=for :list
+* C<NN_DONTWAIT>
+Specifies that the operation should be performed in non-blocking mode. If the
+message cannot be sent straight away, the function will fail with C<nn_errno>
+set to C<EAGAIN>.
+
+If the function succeeds number of bytes in the message is returned. Otherwise,
+C<undef> is returned and C<nn_errno> is set to to one of the values defined
+below.
+
+=for :list
+* C<EBADF>
+The provided socket is invalid.
+* C<ENOTSUP>
+The operation is not supported by this socket type.
+* C<EFSM>
+The operation cannot be performed on this socket at the moment because socket is
+not in the appropriate state. This error may occur with socket types that switch
+between several states.
+* C<EAGAIN>
+Non-blocking mode was requested and the message cannot be sent at the moment.
+* C<EINTR>
+The operation was interrupted by delivery of a signal before the message was
+sent.
+* C<ETIMEDOUT>
+Individual socket types may define their own specific timeouts. If such timeout
+is hit this error will be returned.
+* C<ETERM>
+The library is terminating.
+
+In the future, C<nn_sendmsg> might allow for sending along additional control
+data.
+
 =func nn_recvmsg($s, $flags, $data1 => $len1, $data2 => $len2, ..., $dataN => $lenN)
 
     my $bytes_received = nn_recvmsg($s, 0, my $buf1 => 256, my $buf2 => 1024);
