@@ -490,6 +490,27 @@ textual message describing the error.
 
     nn_device($s1, $s2) or die;
 
+Starts a device to forward messages between two sockets. If both sockets are
+valid, the C<nn_device> function loops and sends and messages received from
+C<$s1> to C<$s2> and vice versa. If only one socket is valid and the other is
+C<undef>, C<nn_device> works in a loopback mode — it loops and sends any
+messages received from the socket back to itself.
+
+The function loops until it hits an error. In such case it returns C<undef> and
+sets C<nn_errno> to one of the values defined below.
+
+=for :list
+* C<EBADF>
+One of the provided sockets is invalid.
+* C<EINVAL>
+Either one of the socket is not an C<AF_SP_RAW> socket; or the two sockets don’t
+belong to the same protocol; or the directionality of the sockets doesn’t fit
+(e.g. attempt to join two SINK sockets to form a device).
+* C<EINTR>
+The operation was interrupted by delivery of a signal.
+* C<ETERM>
+The library is terminating.
+
 =func nn_term()
 
     nn_term();
