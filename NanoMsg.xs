@@ -89,9 +89,20 @@ perl_nn_upgrade_to_message (pTHX_ SV *sv)
   MAGIC *mg;
   struct perl_nn_message *msg;
   SV *obj = newSV(0);
-  sv_upgrade(sv, SVt_RV);
+
+  /* There's no sane way to prepare an arbitrary SV to be a reference, so we'll
+   * have to go out of our way a bit. Also, we're forced to free any PV, if
+   * present, as PV and RV are stored in the same place within an SV. */
   if (SvROK(sv))
     SvREFCNT_dec(SvRV(sv));
+  if (SvTYPE(sv) >= SVt_PV && SvPVX_const(sv) && SvLEN(sv)) {
+    SvPV_free(sv);
+    SvPV_set(sv, NULL);
+    SvLEN_set(sv, 0);
+  }
+
+  SvUPGRADE(sv, SVt_RV);
+  SvPOK_off(sv);
   SvRV_set(sv, obj);
   SvROK_on(sv);
   sv_upgrade(obj, SVt_PVMG);
@@ -241,7 +252,7 @@ nn_send (s, buf, flags = 0)
       perl_nn_invalidate_message(aTHX_ buf);
 
 int
-nn_recv (s, buf, len, flags = 0)
+nn_recv (s, buf, len = NN_MSG, flags = 0)
     int s
     SV *buf
     size_t len
