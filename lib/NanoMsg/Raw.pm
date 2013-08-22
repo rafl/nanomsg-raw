@@ -280,6 +280,45 @@ The library is terminating.
     my $eid = nn_connect($s, 'inproc://test');
     die nn_errno unless defined $eid;
 
+Adds a remote endpoint to the socket C<$s>. The library would then try to
+connect to the specified remote endpoint.
+
+The C<$addr> argument consists of two parts as follows:
+C<transport://address>. The C<transport> specifies the underlying transport
+protocol to use. The meaning of the C<address> part is specific to the
+underlying transport protocol.
+
+See L</Protocols> for a list of available transport protocols.
+
+The maximum length of the C<$addr> parameter is specified by C<NN_SOCKADDR_MAX>
+constant.
+
+Note that C<nn_connect> and C<nn_bind> may be called multiple times on the same
+socket thus allowing the socket to communicate with multiple heterogeneous
+endpoints.
+
+If the function succeeds, an endpoint ID is returned. Endpoint ID can be later
+used to remove the endpoint from the socket via C<nn_shutdown> function.
+
+If the function fails, C<undef> is returned and C<nn_errno> is set to to one of
+the values defined below.
+
+=for :list
+* C<EBADF>
+The provided socket is invalid.
+* C<EMFILE>
+Maximum number of active endpoints was reached.
+* C<EINVAL>
+The syntax of the supplied address is invalid.
+* C<ENAMETOOLONG>
+The supplied address is too long.
+* C<EPROTONOSUPPORT>
+The requested transport protocol is not supported.
+* C<ENODEV>
+Address specifies a nonexistent interface.
+* C<ETERM>
+The library is terminating.
+
 =func nn_shutdown($s, $eid)
 
     nn_shutdown($s, $eid) or die nn_errno;
