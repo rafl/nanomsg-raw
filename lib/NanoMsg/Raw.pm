@@ -7,7 +7,7 @@ use XSLoader;
 use NanoMsg::Raw::Message;
 
 BEGIN {
-    XSLoader::load 'NanoMsg'; # TODO: version
+    XSLoader::load 'NanoMsg::Raw'; # TODO: version
 }
 
 use Exporter 'import';

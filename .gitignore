@@ -4,5 +4,6 @@
 *META*
 Makefile*
 !Makefile.PL
-/NanoMsg.*
-!/NanoMsg.xs
+/Raw.*
+!/Raw.xs
+NanoMsg-Raw-*

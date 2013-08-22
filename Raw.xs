@@ -155,7 +155,7 @@ perl_nn_is_message (pTHX_ SV *sv)
   return sv_isobject(sv) && sv_isa(sv, "NanoMsg::Raw::Message");
 }
 
-MODULE=NanoMsg  PACKAGE=NanoMsg::Raw
+MODULE=NanoMsg::Raw  PACKAGE=NanoMsg::Raw
 
 PROTOTYPES: DISABLE
 
@@ -444,7 +444,7 @@ BOOT:
     XSANY.any_iv = NN_MSG;
   }
 
-MODULE=NanoMsg  PACKAGE=NanoMsg::Raw::Message
+MODULE=NanoMsg::Raw  PACKAGE=NanoMsg::Raw::Message
 
 void
 copy (sv, src)
