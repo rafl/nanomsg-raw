@@ -404,6 +404,11 @@ perl_nn_int_bool
 nn_device (s1, s2)
     int s1
     int s2
+  INIT:
+    if (ST(0) == &PL_sv_undef)
+      s1 = -1;
+    if (ST(1) == &PL_sv_undef)
+      s2 = -1;
 
 void
 nn_term ()
