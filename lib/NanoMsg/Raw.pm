@@ -6,9 +6,10 @@ use warnings;
 use XSLoader;
 use NanoMsg::Raw::Message;
 
-BEGIN {
-    XSLoader::load 'NanoMsg::Raw'; # TODO: version
-}
+XSLoader::load(
+    'NanoMsg::Raw',
+    exists $NanoMsg::Raw::{VERSION} ? ${ $NanoMsg::Raw::{VERSION} } : (),
+);
 
 use Exporter 'import';
 
