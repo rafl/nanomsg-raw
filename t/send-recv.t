@@ -48,44 +48,44 @@ my $buf;
 
 # buffer is large enough for the string
 is nn_recv( $subs[0], $buf ), $mlen;
-ok length($buf) == $mlen;
+is length($buf), $mlen;
 is nn_recv( $subs[1], $buf, NN_MSG ), $mlen;
-ok length($buf) == $mlen;
+is length($buf), $mlen;
 is nn_recv( $subs[2], $buf, $mlen ), $mlen;
-ok length($buf) == $mlen;
+is length($buf), $mlen;
 is nn_recv( $subs[3], $buf, NN_MSG, 0 ), $mlen;
-ok length($buf) == $mlen;
+is length($buf), $mlen;
 is nn_recv( $subs[4], $buf, $mlen, 0 ), $mlen;
-ok length($buf) == $mlen;
+is length($buf), $mlen;
 is nn_recv( $subs[5], $buf, NN_MSG, NN_DONTWAIT ), $mlen;
-ok length($buf) == $mlen;
+is length($buf), $mlen;
 is nn_recv( $subs[6], $buf, $mlen, NN_DONTWAIT ), $mlen;
-ok length($buf) == $mlen;
+is length($buf), $mlen;
 
 # receive the whole message
 is nn_recv( $subs[0], $buf ), $mlen;
-ok length($buf) == $mlen;
+is length($buf), $mlen;
 
 # receive only a few bytes - mixed with requests for the whole message
 # while reusing the buffer.
 my $bsize = int( $mlen / 2 );
 is nn_recv( $subs[1], $buf, NN_MSG ), $mlen;
-ok length($buf) == $mlen;
+is length($buf), $mlen;
 is nn_recv( $subs[2], $buf, $bsize ), $mlen;
-ok length($buf) == $bsize;
+is length($buf), $bsize;
 is nn_recv( $subs[3], $buf, NN_MSG, 0 ), $mlen;
-ok length($buf) == $mlen;
+is length($buf), $mlen;
 is nn_recv( $subs[4], $buf, $bsize, 0 ), $mlen;
-ok length($buf) == $bsize;
+is length($buf), $bsize;
 is nn_recv( $subs[5], $buf, NN_MSG, NN_DONTWAIT ), $mlen;
-ok length($buf) == $mlen;
+is length($buf), $mlen;
 is nn_recv( $subs[6], $buf, $bsize, NN_DONTWAIT ), $mlen;
-ok length($buf) == $bsize;
+is length($buf), $bsize;
 
 # there is nothing left to receive
 my $str = $buf = 'This buffer should not change';
 ok !defined nn_recv( $subs[3], $buf, $bsize, NN_DONTWAIT );
-ok $buf eq $str;
+is $buf, $str;
 
 ok nn_close $_ for $pub, @subs;
 
