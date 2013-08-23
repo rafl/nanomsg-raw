@@ -79,6 +79,7 @@ allows to query state of multiple applications in a single go
 Scalability protocols are layered on top of transport layer in the network
 stack. At the moment, nanomsg library supports following transports:
 
+=for :list
 * C<INPROC>
 transport within a process (between threads, modules etc.)
 * C<IPC>
