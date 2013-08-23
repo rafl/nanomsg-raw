@@ -825,6 +825,8 @@ C<NN_SNDBUF> socket option is ignored. In addition to the buffer, one message of
 arbitrary size will fit into the buffer. That way, even messages larger than the
 buffer can be transfered via inproc connection.
 
+This transport's ID is C<NN_INPROC>.
+
 =head2 Inter-process transport
 
 The inter-process transport allows for sending messages between processes within
@@ -841,6 +843,8 @@ On Windows, named pipes are used for IPC. IPC address is an arbitrary
 case-insensitive string containing any character except for
 backslash. Internally, address C<ipc://test> means that named pipe
 C<\\.\pipe\test> will be used.
+
+This transport's ID is C<NN_IPC>.
 
 =head2 TCP transport
 
@@ -877,6 +881,8 @@ the following (optionally placed within square brackets):
 * IPv4 address of a remote network interface in numeric form (192.168.0.111).
 * IPv6 address of a remote network interface in numeric form (::1).
 * The DNS name of the remote box.
+
+This transport's ID is C<NN_TCP>.
 
 =head3 Socket Options
 
