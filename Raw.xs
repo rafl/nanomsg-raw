@@ -6,6 +6,7 @@
 #include <nanomsg/pair.h>
 
 SV *errno_sv;
+HV *message_stash, *message_freed_stash;
 
 #define PERL_NN_SET_ERRNO STMT_START { \
   sv_setpv(errno_sv, nn_strerror(errno)); \
@@ -109,7 +110,7 @@ perl_nn_upgrade_to_message (pTHX_ SV *sv)
   SvPOK_on(obj);
   SvCUR_set(obj, 0);
   SvLEN_set(obj, 0);
-  sv_bless(sv, gv_stashpvs("NanoMsg::Raw::Message", GV_ADD));
+  sv_bless(sv, message_stash);
   SvREADONLY_on(obj);
   Newxz(msg, 1, struct perl_nn_message);
   mg = sv_magicext(obj, NULL, PERL_MAGIC_ext, &perl_nn_message_vtbl, (char *)msg, 0);
@@ -126,7 +127,7 @@ perl_nn_invalidate_message (pTHX_ SV *sv)
   SvREADONLY_off(obj);
   SvPOK_off(obj);
   SvPVX(obj) = NULL;
-  sv_bless(sv, gv_stashpvs("NanoMsg::Raw::Message::Freed", GV_ADD));
+  sv_bless(sv, message_freed_stash);
 
   for (prevmg = NULL, mg = SvMAGIC(obj); mg; prevmg = mg, mg = moremg) {
     moremg = mg->mg_moremagic;
@@ -152,7 +153,7 @@ perl_nn_invalidate_message (pTHX_ SV *sv)
 static bool
 perl_nn_is_message (pTHX_ SV *sv)
 {
-  return sv_isobject(sv) && sv_isa(sv, "NanoMsg::Raw::Message");
+  return sv_isobject(sv) && SvSTASH(SvRV(sv)) == message_stash;
 }
 
 MODULE=NanoMsg::Raw  PACKAGE=NanoMsg::Raw
@@ -425,6 +426,8 @@ BOOT:
   symbol_names = newAV();
   errno_sv = newSV(0);
   sv_upgrade(errno_sv, SVt_PVIV);
+  message_stash = gv_stashpvs("NanoMsg::Raw::Message", 0);
+  message_freed_stash = gv_stashpvs("NanoMsg::Raw::Message::Freed", GV_ADD);
   {
     CV *cv;
     const char *sym;
