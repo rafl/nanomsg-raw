@@ -615,6 +615,13 @@ The return value can be used in numeric context, for example to compare it with
 error code constants such as C<EAGAIN>, or in a string context, to retrieve a
 textual message describing the error.
 
+=func nn_strerror($errno)
+
+Returns a textual representation of the error described by the nummeric
+C<$errno> provided. It shouldn't normally be necessary to ever call this
+function, as using C<nn_errno> in string context is basically equivalent to
+C<nn_strerror(nn_errno)>.
+
 =func nn_device($s1, $s2)
 
     nn_device($s1, $s2) or die;
