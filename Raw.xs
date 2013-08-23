@@ -1,6 +1,9 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
+#define NEED_sv_2pv_flags_GLOBAL
+#define NEED_sv_pvn_force_flags_GLOBAL
+#include "ppport.h"
 
 #include <nanomsg/nn.h>
 #include <nanomsg/pair.h>
