@@ -11,6 +11,10 @@
 SV *errno_sv;
 HV *message_stash, *message_freed_stash;
 
+#ifndef XS_INTERNAL
+#define XS_INTERNAL(name) static XSPROTO(name)
+#endif
+
 #define PERL_NN_SET_ERRNO STMT_START { \
   sv_setpv(errno_sv, nn_strerror(errno)); \
   SvIV_set(errno_sv, errno); \
@@ -73,8 +77,8 @@ perl_nn_message_mg_find (pTHX_ SV *sv)
 
 AV *symbol_names;
 
-static void XS_NanoMsg__Raw_nn_constant(pTHX_ CV* cv);
-static void XS_NanoMsg__Raw_nn_constant(pTHX_ CV* cv)
+XS_INTERNAL(XS_NanoMsg__Raw_nn_constant);
+XS_INTERNAL(XS_NanoMsg__Raw_nn_constant)
 {
   dVAR;
   dXSARGS;
