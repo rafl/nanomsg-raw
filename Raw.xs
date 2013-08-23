@@ -5,6 +5,10 @@
 #include <nanomsg/nn.h>
 #include <nanomsg/pair.h>
 
+#ifndef XS_INTERNAL
+#  define XS_INTERNAL(name) static XSPROTO(name)
+#endif
+
 SV *errno_sv;
 HV *message_stash, *message_freed_stash;
 
