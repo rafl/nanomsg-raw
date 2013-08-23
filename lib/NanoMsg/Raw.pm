@@ -13,10 +13,20 @@ XSLoader::load(
 
 use Exporter 'import';
 
-our @EXPORT = (
-    _symbols(), 'NN_MSG',
-    (map { "nn_$_" } qw(socket close setsockopt getsockopt bind connect shutdown
-                        send recv sendmsg recvmsg allocmsg strerror device term errno)),
+my @constants = (_symbols(), 'NN_MSG');
+my @functions = (
+    map { "nn_$_" } qw(
+        socket close setsockopt getsockopt bind connect shutdown
+        send recv sendmsg recvmsg allocmsg strerror device term errno
+    )
+);
+
+our @EXPORT_OK = (@constants, @functions);
+our @EXPORT = @EXPORT_OK;
+our %EXPORT_TAGS = (
+    all       => \@EXPORT_OK,
+    constants => \@constants,
+    functions => \@functions,
 );
 
 =head1 SYNOPSIS
