@@ -436,6 +436,8 @@ BOOT:
     size_t prefixlen = sizeof("NanoMsg::Raw::") - 1;
     while ((sym = nn_symbol(i++, &val)) != NULL) {
       size_t symlen = strlen(sym);
+      if (strncmp(sym, "EFAULT", sizeof("EFAULT")-1) == 0)
+        continue;
       av_push(symbol_names, newSVpv(sym, symlen));
       memcpy(name + prefixlen, sym, symlen+1);
       cv = newXS(name, XS_NanoMsg__Raw_nn_constant, file);
