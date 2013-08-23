@@ -965,6 +965,17 @@ NN_VERSION_AGE
 NN_VERSION_CURRENT
 NN_VERSION_REVISION
 
+=head1 SEE ALSO
+
+=for :list
+* The nanomsg C library documentation at L<http://nanomsg.org/v0.1/nanomsg.7.html>
+The API this module provides is very close to the C library's interface, so the
+C documentation is likely to be useful to developers using Perl,
+too. Additionally, most of this module's documentation is copied from the C
+library documentation, so the upstream documentation might be somewhat more
+recent.
+* L<NanoMsg::Raw::Message>
+
 =cut
 
 1;
