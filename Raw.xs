@@ -73,8 +73,8 @@ perl_nn_message_mg_find (pTHX_ SV *sv)
 
 AV *symbol_names;
 
-XS_INTERNAL(XS_NanoMsg__Raw_nn_constant);
-XS_INTERNAL(XS_NanoMsg__Raw_nn_constant)
+static void XS_NanoMsg__Raw_nn_constant(pTHX_ CV* cv);
+static void XS_NanoMsg__Raw_nn_constant(pTHX_ CV* cv)
 {
   dVAR;
   dXSARGS;
