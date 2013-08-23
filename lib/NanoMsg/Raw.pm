@@ -892,6 +892,20 @@ This option, when set to 1, disables Nagle’s algorithm. It also disables
 delaying of TCP acknowledgments. Using this option improves latency at the
 expense of throughput. Type of this option is int. The default value is 0.
 
+=head1 Constants
+
+In addition to all the error constants and C<NN_> constants used in the
+documentation of the individual functions, protocols, and transports, the
+following constants are available:
+
+=for :list
+* C<NN_VERSION_CURRENT>
+The current interface version.
+* C<NN_VERSION_REVISION>
+The latest revision of the current interface.
+* C<NN_VERSION_AGE>
+How many past interface versions are still supported.
+
 =cut
 
 1;
