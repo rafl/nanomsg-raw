@@ -6,10 +6,10 @@ before_install:
   - ls -la
   - export nanomsgver=0.1-alpha
   - export nanomsgbuild=`mktemp -d`
-  - cd $nanomsgbuild
+  - pushd $nanomsgbuild
   - wget http://download.nanomsg.org/nanomsg-${nanomsgver}.tar.gz
   - tar xfz nanomsg-${nanomsgver}.tar.gz
-  - pushd nanomsg-${nanomsgver}
+  - cd nanomsg-${nanomsgver}
   - ./configure
   - make
   - make check
