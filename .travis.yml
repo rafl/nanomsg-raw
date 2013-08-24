@@ -2,8 +2,6 @@ language: perl
 perl:
   - 5.19
 before_install:
-  - pwd
-  - ls -la
   - export nanomsgver=0.1-alpha
   - export nanomsgbuild=`mktemp -d`
   - pushd $nanomsgbuild
@@ -22,8 +20,6 @@ install:
   - cpanm Dist::Zilla::Plugin::MakeMaker::Awesome
   # for the generated optional pod tests that'll otherwise get skipped
   - cpanm Test::Pod Test::Pod::Coverage Pod::Coverage::TrustPod
-  - pwd
-  - ls -la
   - dzil listdeps |cpanm
 script:
   - dzil test --all
