@@ -25,6 +25,5 @@ install:
   # for the generated optional pod tests that'll otherwise get skipped
   - cpanm Test::Pod Test::Pod::Coverage Pod::Coverage::TrustPod
   - dzil listdeps |cpanm
-  - perlbrew list
 script:
   - dzil test --all
