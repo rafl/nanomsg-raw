@@ -965,6 +965,14 @@ NN_VERSION_AGE
 NN_VERSION_CURRENT
 NN_VERSION_REVISION
 
+=for Pod::Coverage - not documented by upstream and perhaps not used; see https://github.com/250bpm/nanomsg/issues/108
+ECONNREFUSED
+EINPROGRESS
+ENETDOWN
+ENOBUFS
+ENOTSOCK
+EPROTO
+
 =head1 SEE ALSO
 
 =for :list
