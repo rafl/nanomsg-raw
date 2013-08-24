@@ -7,11 +7,12 @@ before_install:
   - cd $nanomsgbuild
   - wget http://download.nanomsg.org/nanomsg-${nanomsgver}.tar.gz
   - tar xfz nanomsg-${nanomsgver}.tar.gz
-  - cd nanomsg-${nanomsgver}
+  - pushd nanomsg-${nanomsgver}
   - ./configure
   - make
   - make check
   - sudo make install
+  - popd
 install:
   - cpanm Dist::Zilla
   - dzil authordeps |grep -v '^inc' |cpanm
