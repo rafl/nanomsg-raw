@@ -27,6 +27,20 @@ S_mg_findext(pTHX_ SV *sv, int type, const MGVTBL *vtbl)
 }
 #endif
 
+#define PERL_VERSION_DECIMAL(r,v,s) (r*1000000 + v*1000 + s)
+#define PERL_DECIMAL_VERSION \
+  PERL_VERSION_DECIMAL(PERL_REVISION,PERL_VERSION,PERL_SUBVERSION)
+#define PERL_VERSION_GE(r,v,s) \
+  (PERL_DECIMAL_VERSION >= PERL_VERSION_DECIMAL(r,v,s))
+
+#if PERL_VERSION_GE(5,14,0)
+#  define SIZETf "%zd"
+#  define SIZETfARG(s) s
+#else
+#  define SIZETf "%lu"
+#  define SIZETfARG(s) (unsigned long)s
+#endif
+
 SV *errno_sv;
 HV *message_stash, *message_freed_stash;
 
@@ -487,7 +501,8 @@ copy (sv, src)
     buf = SvPV(src, len);
     msg = perl_nn_message_mg_find(aTHX_ obj);
     if (len > msg->len)
-      croak("Trying to copy %zd bytes into a message buffer of size %zd", len, msg->len);
+      croak("Trying to copy "SIZETf" bytes into a message buffer of size "SIZETf,
+            SIZETfARG(len), SIZETfARG(msg->len));
   CODE:
     memcpy(msg->buf, buf, len);
     SvPVX(obj) = msg->buf;
