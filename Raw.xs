@@ -41,6 +41,15 @@ S_mg_findext(pTHX_ SV *sv, int type, const MGVTBL *vtbl)
 #  define SIZETfARG(s) (unsigned long)s
 #endif
 
+#ifndef dVAR
+#  define dVAR dNOOP
+#endif
+
+#ifndef croak_xs_usage
+#  define croak_xs_usage(a,b)    S_croak_xs_usage(aTHX_ a,b)
+static void S_croak_xs_usage(pTHX_ const CV *const cv, const char *const params);
+#endif
+
 SV *errno_sv;
 HV *message_stash, *message_freed_stash;
 
