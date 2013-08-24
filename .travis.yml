@@ -2,6 +2,8 @@ language: perl
 perl:
   - 5.19
 before_install:
+  - pwd
+  - ls -la
   - export nanomsgver=0.1-alpha
   - export nanomsgbuild=`mktemp -d`
   - cd $nanomsgbuild
