@@ -5,6 +5,7 @@ perl:
   - 5.16
   - 5.14
   - 5.12
+  - 5.10
 before_install:
   - export nanomsgver=0.1-alpha
   - export nanomsgbuild=`mktemp -d`
