@@ -1,0 +1,29 @@
+language: perl
+perl:
+  - 5.19
+  - 5.18
+  - 5.16
+  - 5.14
+  - 5.12
+before_install:
+  - export nanomsgver=0.1-alpha
+  - export nanomsgbuild=`mktemp -d`
+  - pushd $nanomsgbuild
+  - wget http://download.nanomsg.org/nanomsg-${nanomsgver}.tar.gz
+  - tar xfz nanomsg-${nanomsgver}.tar.gz
+  - cd nanomsg-${nanomsgver}
+  - ./configure
+  - make
+  - make check
+  - sudo make install
+  - popd
+install:
+  - cpanm Dist::Zilla
+  - dzil authordeps |grep -v '^inc' |cpanm
+  # should get this into authordeps somehow
+  - cpanm Dist::Zilla::Plugin::MakeMaker::Awesome
+  # for the generated optional pod tests that'll otherwise get skipped
+  - cpanm Test::Pod Test::Pod::Coverage Pod::Coverage::TrustPod
+  - dzil listdeps |cpanm
+script:
+  - dzil test --all
