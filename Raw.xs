@@ -9,6 +9,24 @@
 #  define XS_INTERNAL(name) static XSPROTO(name)
 #endif
 
+#ifndef mg_findext
+#  define mg_findext(sv, type, vtbl) S_mg_findext(aTHX_ sv, type, vtbl)
+static MAGIC *
+S_mg_findext(pTHX_ SV *sv, int type, const MGVTBL *vtbl)
+{
+  MAGIC *mg;
+
+  if (sv) {
+    for (mg = SvMAGIC(sv); mg; mg = mg->mg_moremagic) {
+      if (mg->mg_type == type && mg->mg_virtual == vtbl)
+        return mg;
+    }
+  }
+
+  return NULL;
+}
+#endif
+
 SV *errno_sv;
 HV *message_stash, *message_freed_stash;
 
