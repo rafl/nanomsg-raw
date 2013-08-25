@@ -16,16 +16,15 @@ before_install:
   - cd nanomsg-${nanomsgver}
   - ./configure
   - make
-  - make check
   - sudo make install
   - popd
 install:
-  - cpanm Dist::Zilla
-  - dzil authordeps |grep -v '^inc' |cpanm
+  - cpanm -qn Dist::Zilla
+  - dzil authordeps |grep -v '^inc' |cpanm -qn
   # should get this into authordeps somehow
-  - cpanm Dist::Zilla::Plugin::MakeMaker::Awesome
+  - cpanm -qn Dist::Zilla::Plugin::MakeMaker::Awesome
   # for the generated optional pod tests that'll otherwise get skipped
-  - cpanm Test::Pod Test::Pod::Coverage Pod::Coverage::TrustPod
-  - dzil listdeps |cpanm
+  - cpanm -qn Test::Pod Test::Pod::Coverage Pod::Coverage::TrustPod
+  - dzil listdeps |cpanm -qn
 script:
   - dzil test --all
