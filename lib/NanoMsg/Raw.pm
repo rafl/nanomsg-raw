@@ -69,10 +69,9 @@ simple many-to-many communication
 allows to build clusters of stateless services to process user requests
 * C<PUBSUB>
 distributes messages to large sets of interested subscribers
-* C<FANIN>
-aggregates messages from multiple sources
-* C<FANOUT>
-load balances messages among many destinations
+* C<PIPELINE>
+aggregates messages from multiple sources and load balances them among many
+destinations
 * C<SURVEY>
 allows to query state of multiple applications in a single go
 
