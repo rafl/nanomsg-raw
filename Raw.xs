@@ -294,7 +294,7 @@ nn_send (s, buf, flags = 0)
   C_ARGS:
     s, c_buf, len, flags
   POSTCALL:
-    if (len == NN_MSG)
+    if (len == NN_MSG && RETVAL >= 0)
       perl_nn_invalidate_message(aTHX_ buf);
 
 int
@@ -366,9 +366,10 @@ nn_sendmsg (s, flags, ...)
   C_ARGS:
     s, &hdr, flags
   POSTCALL:
-    for (i = 0; i < iovlen; i++)
-      if (iov[i].iov_len == NN_MSG)
-        perl_nn_invalidate_message(aTHX_ ST(i + 2));
+    if (RETVAL >= 0)
+      for (i = 0; i < iovlen; i++)
+        if (iov[i].iov_len == NN_MSG)
+          perl_nn_invalidate_message(aTHX_ ST(i + 2));
   CLEANUP:
     Safefree(iov);
 

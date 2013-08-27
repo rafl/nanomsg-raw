@@ -408,7 +408,7 @@ C<$data> can either be anything that can be used as a byte string in perl or a
 message buffer instance allocated by C<nn_allocmsg>. In case of a message buffer
 instance the instance will be deallocated and invalidated by the C<nn_send>
 function. The buffer will be an instance of C<NanoMsg::Raw::Message::Freed>
-after the call to C<nn_send>.
+after a successful call to C<nn_send>.
 
 Which of the peers the message will be sent to is determined by the particular
 socket type.
@@ -506,7 +506,7 @@ C<$dataN>) can either be anything that can be used as a byte string in perl or a
 message buffer instance allocated by C<nn_allocmsg>. In case of a message buffer
 instance the instance will be deallocated and invalidated by the C<nn_sendmsg>
 function. The buffers will be a instances of C<NanoMsg::Raw::Message::Freed>
-after the call to C<nn_sendmsg>.
+after a successful call to C<nn_sendmsg>.
 
 When using message buffer instances, only one buffer may be provided.
 
