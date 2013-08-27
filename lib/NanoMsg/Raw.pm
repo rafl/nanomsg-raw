@@ -663,6 +663,8 @@ If waiting for C<NN_SNDFD> or C<NN_RCVFD> using a polling function, such as
 C<poll> or C<select>, the call will unblock with both C<NN_SNDFD> and
 C<NN_RCVFD> signaled.
 
+The C<nn_term> function itself is non-blocking.
+
 =head1 Protocols
 
 =head2 One-to-one protocol
