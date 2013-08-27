@@ -378,9 +378,9 @@ The library is terminating.
 
 Removes an endpoint from socket C<$s>. The C<eid> parameter specifies the ID of
 the endpoint to remove as returned by prior call to C<nn_bind> or
-C<nn_connect>. The library will try to deliver any outstanding outbound messages
-to this endpoint for the time specified by the C<NN_LINGER> socket option. The
-call will block in the meantime.
+C<nn_connect>. C<nn_shutdown> call will return immediately,
+however, the library will try to deliver any outstanding outbound messages to
+the endpoint for the time specified by _NN_LINGER_ socket option.
 
 If the function succeeds, a true value is returned. Otherwise, C<undef> is
 returned and C<nn_errno> is set to to one of the values defined below.
