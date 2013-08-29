@@ -731,7 +731,7 @@ operation is not defined.
 Receives messages from the publisher. Only messages that the socket is
 subscribed to are received. When the socket is created there are no
 subscriptions and thus no messages will be received. Send operation is not
-defined on this socket. The socket can be connected to at most one peer.
+defined on this socket.
 
 =head3 Socket Options
 
