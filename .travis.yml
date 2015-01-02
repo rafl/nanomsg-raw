@@ -8,7 +8,7 @@ perl:
   - "5.10"
   - "5.8"
 before_install:
-  - export nanomsgver=0.1-alpha
+  - export nanomsgver=0.5-beta
   - export nanomsgbuild=`mktemp -d`
   - pushd $nanomsgbuild
   - wget http://download.nanomsg.org/nanomsg-${nanomsgver}.tar.gz
@@ -19,6 +19,7 @@ before_install:
   - sudo make install
   - popd
 install:
+  - cpanm -qn Dist::Zilla
   - cpanm -qn Dist::Zilla
   - dzil authordeps |grep -v '^inc' |cpanm -qn
   # should get this into authordeps somehow
