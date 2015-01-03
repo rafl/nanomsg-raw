@@ -44,7 +44,7 @@ our %EXPORT_TAGS = (
 
 =head1 WARNING
 
-B<nanomsg, the c library this module is based on, is still in alpha stage!>
+B<nanomsg, the c library this module is based on, is still in beta stage!>
 
 =head1 DESCRIPTION
 
