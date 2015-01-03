@@ -29,8 +29,31 @@ applications communicate to form a single distributed
 application. Implementation of following scalability protocols is available at
 the moment:
 
+### 
+\* `PAIR`
+simple one-to-one communication
+\* `BUS`
+simple many-to-many communication
+\* `REQREP`
+allows to build clusters of stateless services to process user requests
+\* `PUBSUB`
+distributes messages to large sets of interested subscribers
+\* `PIPELINE`
+aggregates messages from multiple sources and load balances them among many
+destinations
+\* `SURVEY`
+allows to query state of multiple applications in a single go
+
 Scalability protocols are layered on top of transport layer in the network
 stack. At the moment, nanomsg library supports following transports:
+
+### 
+\* `INPROC`
+transport within a process (between threads, modules etc.)
+\* `IPC`
+transport between processes on a single machine
+\* `TCP`
+network transport via TCP
 
 ### nn\_socket($domain, $protocol)
 
@@ -41,6 +64,13 @@ Creates a nanomsg socket with specified `$domain` and `$protocol`. Returns a
 file descriptor for the newly created socket.
 
 Following domains are defined at the moment:
+
+### 
+\* `AF_SP`
+Standard full-blown SP socket.
+\* `AF_SP_RAW`
+Raw SP socket. Raw sockets omit the end-to-end functionality found in `AF_SP`
+sockets and thus can be used to implement intermediary devices in SP topologies.
 
 The `$protocol` parameter defines the type of the socket, which in turn
 determines the exact semantics of the socket. See ["Protocols"](#protocols) to get the list
@@ -57,6 +87,17 @@ from `nn_socket`. All the SP sockets are message-based and thus of
 If the function succeeds file descriptor of the new socket is
 returned. Otherwise, `undef` is returned and `nn_errno` is set to to one of
 the values defined below.
+
+### 
+\* `EAFNOSUPPORT`
+Specified address family is not supported.
+\* `EINVAL`
+Unknown protocol.
+\* `EMFILE`
+The limit on the total number of open SP sockets or OS limit for file
+descriptors has been reached.
+\* `ETERM`
+The library is terminating.
 
 Note that file descriptors returned by `nn_socket` function are not standard
 file descriptors and will exhibit undefined behaviour when used with system
@@ -75,6 +116,13 @@ option. The call will block in the meantime.
 If the function succeeds, a true value is returned. Otherwise, `undef` is
 returned and `nn_errno` is set to to one of the values defined below.
 
+### 
+\* `EBADF`
+The provided socket is invalid.
+\* `EINTR`
+Operation was interrupted by a signal. The socket is not fully closed
+yet. Operation can be re-started by calling `nn_close` again.
+
 ### nn\_setsockopt($s, $level, $option, $value)
 
     nn_setsockopt($s, NN_SOL_SOCKET, NN_LINGER, 1000) or die nn_errno;
@@ -90,7 +138,65 @@ transport-specific options use the ID of the transport as the `$level` argument
 If the function succeeds a true value is returned. Otherwise, `undef` is
 returned and `nn_errno` is set to to one of the values defined below.
 
+### 
+\* `EBADF`
+The provided socket is invalid.
+\* `ENOPROTOOPT`
+The option is unknown at the level indicated.
+\* `EINVAL`
+The specified option value is invalid.
+\* `ETERM`
+The library is terminating.
+
 These are the generic socket-level (`NN_SOL_SOCKET` level) options:
+
+### 
+\* `NN_LINGER`
+Specifies how long the socket should try to send pending outbound messages after
+`nn_close` has been called, in milliseconds. Negative values mean infinite
+linger. The type of the option is int. The default value is 1000 (1 second).
+\* `NN_SNDBUF`
+Size of the send buffer, in bytes. To prevent blocking for messages larger than
+the buffer, exactly one message may be buffered in addition to the data in the
+send buffer. The type of this option is int. The default value is 128kB.
+\* `NN_RCVBUF`
+Size of the receive buffer, in bytes. To prevent blocking for messages larger
+than the buffer, exactly one message may be buffered in addition to the data in
+the receive buffer. The type of this option is int. The default value is 128kB.
+\* `NN_SNDTIMEO`
+The timeout for send operation on the socket, in milliseconds. If a message
+cannot be sent within the specified timeout, an `EAGAIN` error is
+returned. Negative values mean infinite timeout. The type of the option is
+int. The default value is -1.
+\* `NN_RCVTIMEO`
+The timeout for recv operation on the socket, in milliseconds. If a message
+cannot be received within the specified timeout, an `EAGAIN` error is
+returned. Negative values mean infinite timeout. The type of the option is
+int. The default value is -1.
+\* `NN_RECONNECT_IVL`
+For connection-based transports such as TCP, this option specifies how long to
+wait, in milliseconds, when connection is broken before trying to re-establish
+it. Note that actual reconnect interval may be randomised to some extent to
+prevent severe reconnection storms. The type of the option is int. The default
+value is 100 (0.1 second).
+\* `NN_RECONNECT_IVL_MAX`
+This option is to be used only in addition to `NN_RECONNECT_IVL` option. It
+specifies maximum reconnection interval. On each reconnect attempt, the previous
+interval is doubled until `NN_RECONNECT_IVL_MAX` is reached. A value of zero
+means that no exponential backoff is performed and reconnect interval is based
+only on `NN_RECONNECT_IVL`. If `NN_RECONNECT_IVL_MAX` is less than
+`NN_RECONNECT_IVL`, it is ignored. The type of the option is int. The default
+value is 0.
+\* `NN_SNDPRIO`
+Sets outbound priority for endpoints subsequently added to the socket. This
+option has no effect on socket types that send messages to all the
+peers. However, if the socket type sends each message to a single peer (or a
+limited set of peers), peers with high priority take precedence over peers with
+low priority. The type of the option is int. The highest priority is 1, the
+lowest priority is 16. The default value is 8.
+\* `NN_IPV4ONLY`
+If set to 1, only IPv4 addresses are used. If set to 0, both IPv4 and IPv6
+addresses are used. The default value is 1.
 
 ### nn\_getsockopt($s, $level, $option)
 
@@ -107,6 +213,14 @@ The function returns a packed string representing the requested socket option,
 or `undef` on error, with one of the following reasons for the error placed in
 `nn_errno`.
 
+### 
+\* `EBADF`
+The provided socket is invalid.
+\* `ENOPROTOOPT`
+The option is unknown at the `$level` indicated.
+\* `ETERM`
+The library is terminating.
+
 Just what is in the packed string depends on `$level` and `$option`; see the
 list of socket options for details; A common case is that the option is an
 integer, in which case the result is a packed integer, which you can decode
@@ -116,6 +230,24 @@ This function can be used to retrieve the values for all the generic
 socket-level (`NN_SOL_SOCKET`) options documented in `nn_getsockopt` and also
 supports these additional generic socket-level options that can only be
 retrieved but not set:
+
+### 
+\* `NN_DOMAIN`
+Returns the domain constant as it was passed to `nn_socket`.
+\* `NN_PROTOCOL`
+Returns the protocol constant as it was passed to `nn_socket`.
+\* `NN_SNDFD`
+Retrieves a file descriptor that is readable when a message can be sent to the
+socket. The descriptor should be used only for polling and never read from or
+written to. The type of the option is int. The descriptor becomes invalid and
+should not be used any more once the socket is closed. This socket option is not
+available for unidirectional recv-only socket types.
+\* `NN_RCVFD`
+Retrieves a file descriptor that is readable when a message can be received from
+the socket. The descriptor should be used only for polling and never read from
+or written to. The type of the option is int. The descriptor becomes invalid and
+should not be used any more once the socket is closed. This socket option is not
+available for unidirectional send-only socket types.
 
 ### nn\_bind($s, $addr)
 
@@ -145,6 +277,26 @@ used to remove the endpoint from the socket via `nn_shutdown` function.
 If the function fails, `undef` is returned and `nn_errno` is set to to one of
 the values defined below.
 
+### 
+\* `EBADF`
+The provided socket is invalid.
+\* `EMFILE`
+Maximum number of active endpoints was reached.
+\* `EINVAL`
+The syntax of the supplied address is invalid.
+\* `ENAMETOOLONG`
+The supplied address is too long.
+\* `EPROTONOSUPPORT`
+The requested transport protocol is not supported.
+\* `EADDRNOTAVAIL`
+The requested endpoint is not local.
+\* `ENODEV`
+Address specifies a nonexistent interface.
+\* `EADDRINUSE`
+The requested local endpoint is already in use.
+\* `ETERM`
+The library is terminating.
+
 ### nn\_connect($s, $addr)
 
     my $eid = nn_connect($s, 'inproc://test');
@@ -173,6 +325,22 @@ used to remove the endpoint from the socket via `nn_shutdown` function.
 If the function fails, `undef` is returned and `nn_errno` is set to to one of
 the values defined below.
 
+### 
+\* `EBADF`
+The provided socket is invalid.
+\* `EMFILE`
+Maximum number of active endpoints was reached.
+\* `EINVAL`
+The syntax of the supplied address is invalid.
+\* `ENAMETOOLONG`
+The supplied address is too long.
+\* `EPROTONOSUPPORT`
+The requested transport protocol is not supported.
+\* `ENODEV`
+Address specifies a nonexistent interface.
+\* `ETERM`
+The library is terminating.
+
 ### nn\_shutdown($s, $eid)
 
     nn_shutdown($s, $eid) or die nn_errno;
@@ -187,6 +355,17 @@ specified by the `NN_LINGER` socket option.
 
 If the function succeeds, a true value is returned. Otherwise, `undef` is
 returned and `nn_errno` is set to to one of the values defined below.
+
+### 
+\* `EBADF`
+The provided socket is invalid.
+\* `EINVAL`
+The how parameter doesn't correspond to an active endpoint.
+\* `EINTR`
+Operation was interrupted by a signal. The endpoint is not fully closed
+yet. Operation can be re-started by calling `nn_shutdown` again.
+\* `ETERM`
+The library is terminating.
 
 ### nn\_send($s, $data, $flags=0)
 
@@ -208,9 +387,35 @@ socket type.
 The `$flags` argument, which defaults to `0`, is a combination of the flags
 defined below:
 
+### 
+\* `NN_DONTWAIT`
+Specifies that the operation should be performed in non-blocking mode. If the
+message cannot be sent straight away, the function will fail with `nn_errno`
+set to `EAGAIN`.
+
 If the function succeeds, the number of bytes in the message is
 returned. Otherwise, a `undef` is returned and `nn_errno` is set to to one of
 the values defined below.
+
+### 
+\* `EBADF`
+The provided socket is invalid.
+\* `ENOTSUP`
+The operation is not supported by this socket type.
+\* `EFSM`
+The operation cannot be performed on this socket at the moment because the
+socket is not in the appropriate state. This error may occur with socket types
+that switch between several states.
+\* `EAGAIN`
+Non-blocking mode was requested and the message cannot be sent at the moment.
+\* `EINTR`
+The operation was interrupted by delivery of a signal before the message was
+sent.
+\* `ETIMEDOUT`
+Individual socket types may define their own specific timeouts. If such timeout
+is hit, this error will be returned.
+\* `ETERM`
+The library is terminating.
 
 ### nn\_recv($s, $data, $length=NN\_MSG, $flags=0)
 
@@ -227,9 +432,35 @@ so, set the `$length` parameter to `NN_MSG` (the default).
 The `$flags` argument, which defaults to `0`, is a combination of the flags
 defined below:
 
+### 
+\* `NN_DONTWAIT`
+Specifies that the operation should be performed in non-blocking mode. If the
+message cannot be received straight away, the function will fail with
+`nn_errno` set to `EAGAIN`.
+
 If the function succeeds number of bytes in the message is returned. Otherwise,
 `undef` is returned and `nn_errno` is set to to one of the values defined
 below.
+
+### 
+\* `EBADF`
+The provided socket is invalid.
+\* `ENOTSUP`
+The operation is not supported by this socket type.
+\* `EFSM`
+The operation cannot be performed on this socket at the moment because socket is
+not in the appropriate state. This error may occur with socket types that switch
+between several states.
+\* `EAGAIN`
+Non-blocking mode was requested and there's no message to receive at the moment.
+\* `EINTR`
+The operation was interrupted by delivery of a signal before the message was
+received.
+\* `ETIMEDOUT`
+Individual socket types may define their own specific timeouts. If such timeout
+is hit this error will be returned.
+\* `ETERM`
+The library is terminating.
 
 ### nn\_sendmsg($s, $flags, $data1, $data2, ..., $dataN)
 
@@ -255,9 +486,35 @@ particular socket type.
 
 The `$flags` argument is a combination of the flags defined below:
 
+### 
+\* `NN_DONTWAIT`
+Specifies that the operation should be performed in non-blocking mode. If the
+message cannot be sent straight away, the function will fail with `nn_errno`
+set to `EAGAIN`.
+
 If the function succeeds number of bytes in the message is returned. Otherwise,
 `undef` is returned and `nn_errno` is set to to one of the values defined
 below.
+
+### 
+\* `EBADF`
+The provided socket is invalid.
+\* `ENOTSUP`
+The operation is not supported by this socket type.
+\* `EFSM`
+The operation cannot be performed on this socket at the moment because socket is
+not in the appropriate state. This error may occur with socket types that switch
+between several states.
+\* `EAGAIN`
+Non-blocking mode was requested and the message cannot be sent at the moment.
+\* `EINTR`
+The operation was interrupted by delivery of a signal before the message was
+sent.
+\* `ETIMEDOUT`
+Individual socket types may define their own specific timeouts. If such timeout
+is hit this error will be returned.
+\* `ETERM`
+The library is terminating.
 
 In the future, `nn_sendmsg` might allow for sending along additional control
 data.
@@ -281,6 +538,12 @@ do so, set the length parameter of a buffer to to `NN_MSG`. In this case, only
 one receive buffer can be provided.
 
 The `$flags` argument is a combination of the flags defined below:
+
+### 
+\* `NN_DONTWAIT`
+Specifies that the operation should be performed in non-blocking mode. If the
+message cannot be received straight away, the function will fail with
+`nn_errno` set to `EAGAIN`.
 
 In the future, `nn_recvmsg` might allow for receiving additional control data.
 
@@ -307,6 +570,12 @@ If the function succeeds a newly allocated message buffer instance (an object
 instance of the class [NanoMsg::Raw::Message](https://metacpan.org/pod/NanoMsg::Raw::Message)) is returned. Otherwise, `undef`
 is returned and `nn_errno` is set to to one of the values defined below.
 
+### 
+\* `EINVAL`
+Supplied allocation type is invalid.
+\* `ENOMEM`
+Not enough memory to allocate the message.
+
 ### nn\_errno()
 
 Returns value of `errno` after the last call to any nanomsg function in the
@@ -331,11 +600,23 @@ function, as using `nn_errno` in string context is basically equivalent to
 Starts a device to forward messages between two sockets. If both sockets are
 valid, the `nn_device` function loops and sends and messages received from
 `$s1` to `$s2` and vice versa. If only one socket is valid and the other is
-`undef`, `nn_device` works in a loopback mode — it loops and sends any
+`undef`, `nn_device` works in a loopback mode - it loops and sends any
 messages received from the socket back to itself.
 
 The function loops until it hits an error. In such case it returns `undef` and
 sets `nn_errno` to one of the values defined below.
+
+### 
+\* `EBADF`
+One of the provided sockets is invalid.
+\* `EINVAL`
+Either one of the socket is not an `AF_SP_RAW` socket; or the two sockets don't
+belong to the same protocol; or the directionality of the sockets doesn't fit
+(e.g. attempt to join two SINK sockets to form a device).
+\* `EINTR`
+The operation was interrupted by delivery of a signal.
+\* `ETERM`
+The library is terminating.
 
 ### nn\_term()
 
@@ -374,6 +655,12 @@ protocols instead.
 
 ### Socket Types
 
+### 
+\* `NN_PAIR`
+Socket for communication with exactly one peer. Each party can send messages at
+any time. If the peer is not available or send buffer is full subsequent calls
+to `nn_send` will block until it's possible to send the message.
+
 ### Socket Options
 
 No protocol-specific socket options are defined at the moment.
@@ -384,7 +671,20 @@ This protocol is used to distribute the workload among multiple stateless worker
 
 ### Socket Types
 
+### 
+\* `NN_REQ`
+Used to implement the client application that sends requests and receives
+replies.
+\* `NN_REP`
+Used to implement the stateless worker that receives requests and sends replies.
+
 ### Socket Options
+
+### 
+\* `NN_REQ_RESEND_IVL`
+This option is defined on the full REQ socket. If a reply is not received in
+specified amount of milliseconds, the request will be automatically resent. The
+type of this option is int. Default value is 60000 (1 minute).
 
 ## Publish/subscribe protocol
 
@@ -392,7 +692,25 @@ Broadcasts messages to multiple destinations.
 
 ### Socket Types
 
+### 
+\* `NN_PUB`
+This socket is used to distribute messages to multiple destinations. Receive
+operation is not defined.
+\* `NN_SUB`
+Receives messages from the publisher. Only messages that the socket is
+subscribed to are received. When the socket is created there are no
+subscriptions and thus no messages will be received. Send operation is not
+defined on this socket.
+
 ### Socket Options
+
+### 
+\* `NN_SUB_SUBSCRIBE`
+Defined on full SUB socket. Subscribes for a particular topic. Type of the
+option is string.
+\* `NN_SUB_UNSUBSCRIBE`
+Defined on full SUB socket. Unsubscribes from a particular topic. Type of the
+option is string.
 
 ## Survey protocol
 
@@ -400,7 +718,25 @@ Allows to broadcast a survey to multiple locations and gather the responses.
 
 ### Socket Types
 
+### 
+\* `NN_SURVEYOR`
+Used to send the survey. The survey is delivered to all the connected
+respondents. Once the query is sent, the socket can be used to receive the
+responses. When the survey deadline expires, receive will return the
+`ETIMEDOUT` error.
+\* `NN_RESPONDENT`
+Use to respond to the survey. Survey is received using receive function,
+response is sent using send function. This socket can be connected to at most
+one peer.
+
 ### Socket Options
+
+### 
+\* `NN_SURVEYOR_DEADLINE`
+Specifies how long to wait for responses to the survey. Once the deadline
+expires, receive function will return the `ETIMEDOUT` error and all subsequent
+responses to the survey will be silently dropped. The deadline is measured in
+milliseconds. Option type is int. Default value is 1000 (1 second).
 
 ## Pipeline protocol
 
@@ -408,6 +744,14 @@ Fair queues messages from the previous processing step and load balances them
 among instances of the next processing step.
 
 ### Socket Types
+
+### 
+\* `NN_PUSH`
+This socket is used to send messages to a cluster of load-balanced
+nodes. Receive operation is not implemented on this socket type.
+\* `NN_PULL`
+This socket is used to receive a message from a cluster of nodes. Send operation
+is not implemented on this socket type.
 
 ### Socket Options
 
@@ -429,6 +773,11 @@ Raw (`AF_SP_RAW`) BUS socket never send the message to the peer it was received
 from.
 
 ### Socket Types
+
+### 
+\* `NN_BUS`
+Sent messages are distributed to all nodes in the topology. Incoming messages
+from all other nodes in the topology are fair-queued in the socket.
 
 ### Socket Options
 
@@ -481,18 +830,40 @@ When binding a TCP socket address of the form `tcp://interface:port` should be
 used. Port is the TCP port number to use. Interface is one of the following
 (optionally placed within square brackets):
 
+### 
+\* Asterisk character (\*) meaning all local network interfaces.
+\* IPv4 address of a local network interface in numeric form (192.168.0.111).
+\* IPv6 address of a local network interface in numeric form (::1).
+\* Interface name, as defined by operating system.
+
 When connecting a TCP socket address of the form `tcp://interface;address:port`
 should be used. Port is the TCP port number to use. Interface is optional and
 specifies which local network interface to use. If not specified, OS will select
 an appropriate interface itself. If specified it can be one of the following
 (optionally placed within square brackets):
 
+### 
+\* IPv4 address of a local network interface in numeric form (192.168.0.111).
+\* IPv6 address of a local network interface in numeric form (::1).
+\* Interface name, as defined by operating system (eth0).
+
 Finally, address specifies the remote address to connect to. It can be one of
 the following (optionally placed within square brackets):
+
+### 
+\* IPv4 address of a remote network interface in numeric form (192.168.0.111).
+\* IPv6 address of a remote network interface in numeric form (::1).
+\* The DNS name of the remote box.
 
 This transport's ID is `NN_TCP`.
 
 ### Socket Options
+
+### 
+\* `NN_TCP_NODELAY`
+This option, when set to 1, disables Nagle's algorithm. It also disables
+delaying of TCP acknowledgments. Using this option improves latency at the
+expense of throughput. Type of this option is int. The default value is 0.
 
 # Constants
 
@@ -500,5 +871,21 @@ In addition to all the error constants and `NN_` constants used in the
 documentation of the individual functions, protocols, and transports, the
 following constants are available:
 
+### 
+\* `NN_VERSION_CURRENT`
+The current interface version.
+\* `NN_VERSION_REVISION`
+The latest revision of the current interface.
+\* `NN_VERSION_AGE`
+How many past interface versions are still supported.
+
 # SEE ALSO
 
+### 
+\* The nanomsg C library documentation at [http://nanomsg.org/v0.1/nanomsg.7.html](http://nanomsg.org/v0.1/nanomsg.7.html)
+The API this module provides is very close to the C library's interface, so the
+C documentation is likely to be useful to developers using Perl,
+too. Additionally, most of this module's documentation is copied from the C
+library documentation, so the upstream documentation might be somewhat more
+recent.
+\* [NanoMsg::Raw::Message](https://metacpan.org/pod/NanoMsg::Raw::Message)

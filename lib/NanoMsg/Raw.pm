@@ -391,7 +391,7 @@ returned and C<nn_errno> is set to to one of the values defined below.
 * C<EBADF>
 The provided socket is invalid.
 * C<EINVAL>
-The how parameter doesn’t correspond to an active endpoint.
+The how parameter doesn't correspond to an active endpoint.
 * C<EINTR>
 Operation was interrupted by a signal. The endpoint is not fully closed
 yet. Operation can be re-started by calling C<nn_shutdown> again.
@@ -483,7 +483,7 @@ The operation cannot be performed on this socket at the moment because socket is
 not in the appropriate state. This error may occur with socket types that switch
 between several states.
 * C<EAGAIN>
-Non-blocking mode was requested and there’s no message to receive at the moment.
+Non-blocking mode was requested and there's no message to receive at the moment.
 * C<EINTR>
 The operation was interrupted by delivery of a signal before the message was
 received.
@@ -631,7 +631,7 @@ C<nn_strerror(nn_errno)>.
 Starts a device to forward messages between two sockets. If both sockets are
 valid, the C<nn_device> function loops and sends and messages received from
 C<$s1> to C<$s2> and vice versa. If only one socket is valid and the other is
-C<undef>, C<nn_device> works in a loopback mode — it loops and sends any
+C<undef>, C<nn_device> works in a loopback mode - it loops and sends any
 messages received from the socket back to itself.
 
 The function loops until it hits an error. In such case it returns C<undef> and
@@ -641,8 +641,8 @@ sets C<nn_errno> to one of the values defined below.
 * C<EBADF>
 One of the provided sockets is invalid.
 * C<EINVAL>
-Either one of the socket is not an C<AF_SP_RAW> socket; or the two sockets don’t
-belong to the same protocol; or the directionality of the sockets doesn’t fit
+Either one of the socket is not an C<AF_SP_RAW> socket; or the two sockets don't
+belong to the same protocol; or the directionality of the sockets doesn't fit
 (e.g. attempt to join two SINK sockets to form a device).
 * C<EINTR>
 The operation was interrupted by delivery of a signal.
@@ -690,7 +690,7 @@ protocols instead.
 * C<NN_PAIR>
 Socket for communication with exactly one peer. Each party can send messages at
 any time. If the peer is not available or send buffer is full subsequent calls
-to C<nn_send> will block until it’s possible to send the message.
+to C<nn_send> will block until it's possible to send the message.
 
 =head3 Socket Options
 
@@ -892,7 +892,7 @@ This transport's ID is C<NN_TCP>.
 
 =for :list
 * C<NN_TCP_NODELAY>
-This option, when set to 1, disables Nagle’s algorithm. It also disables
+This option, when set to 1, disables Nagle's algorithm. It also disables
 delaying of TCP acknowledgments. Using this option improves latency at the
 expense of throughput. Type of this option is int. The default value is 0.
 
