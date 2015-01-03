@@ -91,7 +91,8 @@ perl_nn_message_mg_free (pTHX_ SV *sv, MAGIC *mg)
 {
   struct perl_nn_message *msg = (struct perl_nn_message *)mg->mg_ptr;
   PERL_UNUSED_ARG(sv);
-  nn_freemsg(msg->buf);
+  if (msg->buf)
+    nn_freemsg(msg->buf);
   return 0;
 }
 
