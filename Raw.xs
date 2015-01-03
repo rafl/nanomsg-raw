@@ -243,10 +243,10 @@ nn_getsockopt (s, level, option)
     int level
     int option
   PREINIT:
-    size_t optvallen;
+    size_t optvallen = 256; /* maxlen of the return value without trailing \0 */
     int ret;
   INIT:
-    RETVAL = newSV(257);
+    RETVAL = newSV(256 + 1);
     (void)SvPOK_only(RETVAL);
   CODE:
     ret = nn_getsockopt(s, level, option, SvPVX(RETVAL), &optvallen);
