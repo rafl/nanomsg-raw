@@ -1,13 +1,15 @@
 # SYNOPSIS
 
+    use Test::More;
     use NanoMsg::Raw;
 
     my $sb = nn_socket(AF_SP, NN_PAIR);
     nn_bind($sb, 'inproc://foo');
-    nn_send($sb, 'bar');
 
     my $sc = nn_socket(AF_SP, NN_PAIR);
     nn_connect($sc, 'inproc://foo');
+
+    nn_send($sb, 'bar');
     nn_recv($sc, my $buf);
     is $buf, 'bar';
 
