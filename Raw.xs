@@ -466,7 +466,7 @@ _symbols ()
     int i;
   PPCODE:
     for (i = 0; i <= av_len(symbol_names); i++)
-      mPUSHs(SvREFCNT_inc(*av_fetch(symbol_names, i, 0)));
+      mXPUSHs(SvREFCNT_inc(*av_fetch(symbol_names, i, 0)));
 
 BOOT:
   symbol_names = newAV();
