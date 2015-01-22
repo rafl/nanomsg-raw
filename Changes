@@ -1,3 +1,10 @@
+0.03  2015-01-22
+  - Documentation improvements.
+  - Fix OS X tests
+  - Fix nn_getsockopt - An uninitialized variable results in unpredictable
+    effects.
+  - Fix rar segfault when using nn_recv.
+
 0.02  2013-08-27
   - Documentation improvements.
 
