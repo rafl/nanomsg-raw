@@ -2,7 +2,7 @@
   - Documentation improvements.
   - Fix OS X tests
   - Fix nn_getsockopt - An uninitialized variable results in unpredictable
-    effects.
+    effects like segfaults or out of memory errors.
   - Fix rar segfault when using nn_recv.
 
 0.02  2013-08-27
