@@ -68,14 +68,14 @@ simple one-to-one communication
 * C<BUS>
 simple many-to-many communication
 * C<REQREP>
-allows to build clusters of stateless services to process user requests
+allows one to build clusters of stateless services to process user requests
 * C<PUBSUB>
 distributes messages to large sets of interested subscribers
 * C<PIPELINE>
 aggregates messages from multiple sources and load balances them among many
 destinations
 * C<SURVEY>
-allows to query state of multiple applications in a single go
+allows one to query state of multiple applications in a single go
 
 Scalability protocols are layered on top of transport layer in the network
 stack. At the moment, nanomsg library supports following transports:
@@ -680,7 +680,7 @@ can be split into two applications (accounting vs. HR) that are run on two
 separate servers. These applications can then communicate via PAIR sockets.
 
 The downside of this protocol is that its scaling properties are very
-limited. Splitting the application into two pieces allows to scale to two
+limited. Splitting the application into two pieces allows one to scale to two
 servers. To add the third server to the cluster, application has to be split
 once more, say be separating HR functionality into hiring module and salary
 computation module. Whenever possible, try to use one of the more scalable
@@ -747,7 +747,7 @@ option is string.
 
 =head2 Survey protocol
 
-Allows to broadcast a survey to multiple locations and gather the responses.
+allows one to broadcast a survey to multiple locations and gather the responses.
 
 =head3 Socket Types
 
@@ -820,7 +820,7 @@ There are no options defined at the moment.
 
 =head2 In-process transport
 
-The in-process transport allows to send messages between threads or modules inside a
+The in-process transport allows one to send messages between threads or modules inside a
 process. In-process address is an arbitrary case-sensitive string preceded by
 C<inproc://> protocol specifier. All in-process addresses are visible from any
 module within the process. They are not visible from outside of the process.
@@ -829,7 +829,7 @@ The overall buffer size for an inproc connection is determined by the
 C<NN_RCVBUF> socket option on the receiving end of the connection. The
 C<NN_SNDBUF> socket option is ignored. In addition to the buffer, one message of
 arbitrary size will fit into the buffer. That way, even messages larger than the
-buffer can be transfered via inproc connection.
+buffer can be transferred via inproc connection.
 
 This transport's ID is C<NN_INPROC>.
 
