@@ -91,7 +91,8 @@ perl_nn_message_mg_free (pTHX_ SV *sv, MAGIC *mg)
 {
   struct perl_nn_message *msg = (struct perl_nn_message *)mg->mg_ptr;
   PERL_UNUSED_ARG(sv);
-  nn_freemsg(msg->buf);
+  if (msg->buf)
+    nn_freemsg(msg->buf);
   return 0;
 }
 
@@ -243,10 +244,10 @@ nn_getsockopt (s, level, option)
     int level
     int option
   PREINIT:
-    size_t optvallen;
+    size_t optvallen = 256; /* maxlen of the return value without trailing \0 */
     int ret;
   INIT:
-    RETVAL = newSV(257);
+    RETVAL = newSV(256 + 1);
     (void)SvPOK_only(RETVAL);
   CODE:
     ret = nn_getsockopt(s, level, option, SvPVX(RETVAL), &optvallen);
@@ -465,7 +466,7 @@ _symbols ()
     int i;
   PPCODE:
     for (i = 0; i <= av_len(symbol_names); i++)
-      mPUSHs(SvREFCNT_inc(*av_fetch(symbol_names, i, 0)));
+      mXPUSHs(SvREFCNT_inc(*av_fetch(symbol_names, i, 0)));
 
 BOOT:
   symbol_names = newAV();

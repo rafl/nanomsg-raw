@@ -1,35 +1,4 @@
-package NanoMsg::Raw;
-# ABSTRACT: Low-level interface to the nanomsg scalability protocols library
-
-use strict;
-use warnings;
-use XSLoader;
-use NanoMsg::Raw::Message;
-
-XSLoader::load(
-    'NanoMsg::Raw',
-    exists $NanoMsg::Raw::{VERSION} ? ${ $NanoMsg::Raw::{VERSION} } : (),
-);
-
-use Exporter 'import';
-
-my @constants = (_symbols(), 'NN_MSG');
-my @functions = (
-    map { "nn_$_" } qw(
-        socket close setsockopt getsockopt bind connect shutdown
-        send recv sendmsg recvmsg allocmsg strerror device term errno
-    )
-);
-
-our @EXPORT_OK = (@constants, @functions);
-our @EXPORT = @EXPORT_OK;
-our %EXPORT_TAGS = (
-    all       => \@EXPORT_OK,
-    constants => \@constants,
-    functions => \@functions,
-);
-
-=head1 SYNOPSIS
+# SYNOPSIS
 
     use Test::More;
     use NanoMsg::Raw;
@@ -44,17 +13,17 @@ our %EXPORT_TAGS = (
     nn_recv($sc, my $buf);
     is $buf, 'bar';
 
-=head1 WARNING
+# WARNING
 
-B<nanomsg, the c library this module is based on, is still in beta stage!>
+**nanomsg, the c library this module is based on, is still in beta stage!**
 
-=head1 DESCRIPTION
+# DESCRIPTION
 
-C<NanoMsg::Raw> is a binding to the C<nanomsg> C library. The goal of this
+`NanoMsg::Raw` is a binding to the `nanomsg` C library. The goal of this
 module is to provide a very low-level and manual interface to all the
 functionality of the nanomsg library. It doesn't intend to provide a convenient
 high-level API, integration with event loops, or the like. Those are intended to
-be implemented as separate abstractions on top of C<NanoMsg::Raw>.
+be implemented as separate abstractions on top of `NanoMsg::Raw`.
 
 The nanomsg C library is a high-performance implementation of several
 "scalability protocols". Scalability protocol's job is to define how multiple
@@ -62,537 +31,537 @@ applications communicate to form a single distributed
 application. Implementation of following scalability protocols is available at
 the moment:
 
-=for :list
-* C<PAIR>
+### 
+* `PAIR`
 simple one-to-one communication
-* C<BUS>
+* `BUS`
 simple many-to-many communication
-* C<REQREP>
+* `REQREP`
 allows one to build clusters of stateless services to process user requests
-* C<PUBSUB>
+* `PUBSUB`
 distributes messages to large sets of interested subscribers
-* C<PIPELINE>
+* `PIPELINE`
 aggregates messages from multiple sources and load balances them among many
 destinations
-* C<SURVEY>
+* `SURVEY`
 allows one to query state of multiple applications in a single go
 
 Scalability protocols are layered on top of transport layer in the network
 stack. At the moment, nanomsg library supports following transports:
 
-=for :list
-* C<INPROC>
+### 
+* `INPROC`
 transport within a process (between threads, modules etc.)
-* C<IPC>
+* `IPC`
 transport between processes on a single machine
-* C<TCP>
+* `TCP`
 network transport via TCP
 
-=func nn_socket($domain, $protocol)
+### nn\_socket($domain, $protocol)
 
     my $s = nn_socket(AF_SP, NN_PAIR);
     die nn_errno unless defined $s;
 
-Creates a nanomsg socket with specified C<$domain> and C<$protocol>. Returns a
+Creates a nanomsg socket with specified `$domain` and `$protocol`. Returns a
 file descriptor for the newly created socket.
 
 Following domains are defined at the moment:
 
-=for :list
-* C<AF_SP>
+### 
+* `AF_SP`
 Standard full-blown SP socket.
-* C<AF_SP_RAW>
-Raw SP socket. Raw sockets omit the end-to-end functionality found in C<AF_SP>
+* `AF_SP_RAW`
+Raw SP socket. Raw sockets omit the end-to-end functionality found in `AF_SP`
 sockets and thus can be used to implement intermediary devices in SP topologies.
 
-The C<$protocol> parameter defines the type of the socket, which in turn
-determines the exact semantics of the socket. See L</Protocols> to get the list
+The `$protocol` parameter defines the type of the socket, which in turn
+determines the exact semantics of the socket. See ["Protocols"](#protocols) to get the list
 of available protocols and their socket types.
 
 The newly created socket is initially not associated with any endpoints. In
 order to establish a message flow at least one endpoint has to be added to the
-socket using C<nn_bind> or C<nn_connect>.
+socket using `nn_bind` or `nn_connect`.
 
-Also note that type argument as found in standard C<socket> function is omitted
-from C<nn_socket>. All the SP sockets are message-based and thus of
-C<SOCK_SEQPACKET> type.
+Also note that type argument as found in standard `socket` function is omitted
+from `nn_socket`. All the SP sockets are message-based and thus of
+`SOCK_SEQPACKET` type.
 
 If the function succeeds file descriptor of the new socket is
-returned. Otherwise, C<undef> is returned and C<nn_errno> is set to to one of
+returned. Otherwise, `undef` is returned and `nn_errno` is set to to one of
 the values defined below.
 
-=for :list
-* C<EAFNOSUPPORT>
+### 
+* `EAFNOSUPPORT`
 Specified address family is not supported.
-* C<EINVAL>
+* `EINVAL`
 Unknown protocol.
-* C<EMFILE>
+* `EMFILE`
 The limit on the total number of open SP sockets or OS limit for file
 descriptors has been reached.
-* C<ETERM>
+* `ETERM`
 The library is terminating.
 
-Note that file descriptors returned by C<nn_socket> function are not standard
+Note that file descriptors returned by `nn_socket` function are not standard
 file descriptors and will exhibit undefined behaviour when used with system
 functions. Moreover, it may happen that a system file descriptor and file
 descriptor of an SP socket will incidentally collide (be equal).
 
-=func nn_close($s)
+### nn\_close($s)
 
     nn_close($s) or die nn_errno;
 
-Closes the socket C<$s>. Any buffered inbound messages that were not yet
+Closes the socket `$s`. Any buffered inbound messages that were not yet
 received by the application will be discarded. The library will try to deliver
-any outstanding outbound messages for the time specified by C<NN_LINGER> socket
+any outstanding outbound messages for the time specified by `NN_LINGER` socket
 option. The call will block in the meantime.
 
-If the function succeeds, a true value is returned. Otherwise, C<undef> is
-returned and C<nn_errno> is set to to one of the values defined below.
+If the function succeeds, a true value is returned. Otherwise, `undef` is
+returned and `nn_errno` is set to to one of the values defined below.
 
-=for :list
-* C<EBADF>
+### 
+* `EBADF`
 The provided socket is invalid.
-* C<EINTR>
+* `EINTR`
 Operation was interrupted by a signal. The socket is not fully closed
-yet. Operation can be re-started by calling C<nn_close> again.
+yet. Operation can be re-started by calling `nn_close` again.
 
-=func nn_setsockopt($s, $level, $option, $value)
+### nn\_setsockopt($s, $level, $option, $value)
 
     nn_setsockopt($s, NN_SOL_SOCKET, NN_LINGER, 1000) or die nn_errno;
     nn_setsockopt($s, NN_SOL_SOCKET, NN_SUB_SUBSCRIBE, 'ABC') or die nn_errno;
 
-Sets the C<$value> of the socket option C<$option>. The C<$level> argument
+Sets the `$value` of the socket option `$option`. The `$level` argument
 specifies the protocol level at which the option resides. For generic
-socket-level options use the C<NN_SOL_SOCKET> level. For socket-type-specific
-options use the socket type for the C<$level> argument (e.g. C<NN_SUB>). For
-transport-specific options use the ID of the transport as the C<$level> argument
-(e.g. C<NN_TCP>).
+socket-level options use the `NN_SOL_SOCKET` level. For socket-type-specific
+options use the socket type for the `$level` argument (e.g. `NN_SUB`). For
+transport-specific options use the ID of the transport as the `$level` argument
+(e.g. `NN_TCP`).
 
-If the function succeeds a true value is returned. Otherwise, C<undef> is
-returned and C<nn_errno> is set to to one of the values defined below.
+If the function succeeds a true value is returned. Otherwise, `undef` is
+returned and `nn_errno` is set to to one of the values defined below.
 
-=for :list
-* C<EBADF>
+### 
+* `EBADF`
 The provided socket is invalid.
-* C<ENOPROTOOPT>
+* `ENOPROTOOPT`
 The option is unknown at the level indicated.
-* C<EINVAL>
+* `EINVAL`
 The specified option value is invalid.
-* C<ETERM>
+* `ETERM`
 The library is terminating.
 
-These are the generic socket-level (C<NN_SOL_SOCKET> level) options:
+These are the generic socket-level (`NN_SOL_SOCKET` level) options:
 
-=for :list
-* C<NN_LINGER>
+### 
+* `NN_LINGER`
 Specifies how long the socket should try to send pending outbound messages after
-C<nn_close> has been called, in milliseconds. Negative values mean infinite
+`nn_close` has been called, in milliseconds. Negative values mean infinite
 linger. The type of the option is int. The default value is 1000 (1 second).
-* C<NN_SNDBUF>
+* `NN_SNDBUF`
 Size of the send buffer, in bytes. To prevent blocking for messages larger than
 the buffer, exactly one message may be buffered in addition to the data in the
 send buffer. The type of this option is int. The default value is 128kB.
-* C<NN_RCVBUF>
+* `NN_RCVBUF`
 Size of the receive buffer, in bytes. To prevent blocking for messages larger
 than the buffer, exactly one message may be buffered in addition to the data in
 the receive buffer. The type of this option is int. The default value is 128kB.
-* C<NN_SNDTIMEO>
+* `NN_SNDTIMEO`
 The timeout for send operation on the socket, in milliseconds. If a message
-cannot be sent within the specified timeout, an C<EAGAIN> error is
+cannot be sent within the specified timeout, an `EAGAIN` error is
 returned. Negative values mean infinite timeout. The type of the option is
 int. The default value is -1.
-* C<NN_RCVTIMEO>
+* `NN_RCVTIMEO`
 The timeout for recv operation on the socket, in milliseconds. If a message
-cannot be received within the specified timeout, an C<EAGAIN> error is
+cannot be received within the specified timeout, an `EAGAIN` error is
 returned. Negative values mean infinite timeout. The type of the option is
 int. The default value is -1.
-* C<NN_RECONNECT_IVL>
+* `NN_RECONNECT_IVL`
 For connection-based transports such as TCP, this option specifies how long to
 wait, in milliseconds, when connection is broken before trying to re-establish
 it. Note that actual reconnect interval may be randomised to some extent to
 prevent severe reconnection storms. The type of the option is int. The default
 value is 100 (0.1 second).
-* C<NN_RECONNECT_IVL_MAX>
-This option is to be used only in addition to C<NN_RECONNECT_IVL> option. It
+* `NN_RECONNECT_IVL_MAX`
+This option is to be used only in addition to `NN_RECONNECT_IVL` option. It
 specifies maximum reconnection interval. On each reconnect attempt, the previous
-interval is doubled until C<NN_RECONNECT_IVL_MAX> is reached. A value of zero
+interval is doubled until `NN_RECONNECT_IVL_MAX` is reached. A value of zero
 means that no exponential backoff is performed and reconnect interval is based
-only on C<NN_RECONNECT_IVL>. If C<NN_RECONNECT_IVL_MAX> is less than
-C<NN_RECONNECT_IVL>, it is ignored. The type of the option is int. The default
+only on `NN_RECONNECT_IVL`. If `NN_RECONNECT_IVL_MAX` is less than
+`NN_RECONNECT_IVL`, it is ignored. The type of the option is int. The default
 value is 0.
-* C<NN_SNDPRIO>
+* `NN_SNDPRIO`
 Sets outbound priority for endpoints subsequently added to the socket. This
 option has no effect on socket types that send messages to all the
 peers. However, if the socket type sends each message to a single peer (or a
 limited set of peers), peers with high priority take precedence over peers with
 low priority. The type of the option is int. The highest priority is 1, the
 lowest priority is 16. The default value is 8.
-* C<NN_IPV4ONLY>
+* `NN_IPV4ONLY`
 If set to 1, only IPv4 addresses are used. If set to 0, both IPv4 and IPv6
 addresses are used. The default value is 1.
 
-=func nn_getsockopt($s, $level, $option)
+### nn\_getsockopt($s, $level, $option)
 
     my $linger = unpack 'i', nn_getsockopt($s, NN_SOL_SOCKET, NN_LINGER) || die nn_errno;
 
-Retrieves the value for the socket option C<$option>. The C<$level> argument
+Retrieves the value for the socket option `$option`. The `$level` argument
 specifies the protocol level at which the option resides. For generic
-socket-level options use the C<NN_SOL_SOCKET> level. For socket-type-specific
-options use the socket type for the C<$level> argument (e.g. C<NN_SUB>). For
-transport-specific options use ID of the transport as the C<$level> argument
-(e.g. C<NN_TCP>).
+socket-level options use the `NN_SOL_SOCKET` level. For socket-type-specific
+options use the socket type for the `$level` argument (e.g. `NN_SUB`). For
+transport-specific options use ID of the transport as the `$level` argument
+(e.g. `NN_TCP`).
 
 The function returns a packed string representing the requested socket option,
-or C<undef> on error, with one of the following reasons for the error placed in
-C<nn_errno>.
+or `undef` on error, with one of the following reasons for the error placed in
+`nn_errno`.
 
-=for :list
-* C<EBADF>
+### 
+* `EBADF`
 The provided socket is invalid.
-* C<ENOPROTOOPT>
-The option is unknown at the C<$level> indicated.
-* C<ETERM>
+* `ENOPROTOOPT`
+The option is unknown at the `$level` indicated.
+* `ETERM`
 The library is terminating.
 
-Just what is in the packed string depends on C<$level> and C<$option>; see the
+Just what is in the packed string depends on `$level` and `$option`; see the
 list of socket options for details; A common case is that the option is an
 integer, in which case the result is a packed integer, which you can decode
-using C<unpack> with the C<i> (or C<I>) format.
+using `unpack` with the `i` (or `I`) format.
 
 This function can be used to retrieve the values for all the generic
-socket-level (C<NN_SOL_SOCKET>) options documented in C<nn_getsockopt> and also
+socket-level (`NN_SOL_SOCKET`) options documented in `nn_getsockopt` and also
 supports these additional generic socket-level options that can only be
 retrieved but not set:
 
-=for :list
-* C<NN_DOMAIN>
-Returns the domain constant as it was passed to C<nn_socket>.
-* C<NN_PROTOCOL>
-Returns the protocol constant as it was passed to C<nn_socket>.
-* C<NN_SNDFD>
+### 
+* `NN_DOMAIN`
+Returns the domain constant as it was passed to `nn_socket`.
+* `NN_PROTOCOL`
+Returns the protocol constant as it was passed to `nn_socket`.
+* `NN_SNDFD`
 Retrieves a file descriptor that is readable when a message can be sent to the
 socket. The descriptor should be used only for polling and never read from or
 written to. The type of the option is int. The descriptor becomes invalid and
 should not be used any more once the socket is closed. This socket option is not
 available for unidirectional recv-only socket types.
-* C<NN_RCVFD>
+* `NN_RCVFD`
 Retrieves a file descriptor that is readable when a message can be received from
 the socket. The descriptor should be used only for polling and never read from
 or written to. The type of the option is int. The descriptor becomes invalid and
 should not be used any more once the socket is closed. This socket option is not
 available for unidirectional send-only socket types.
 
-=func nn_bind($s, $addr)
+### nn\_bind($s, $addr)
 
     my $eid = nn_bind($s, 'inproc://test');
     die nn_errno unless defined $eid;
 
-Adds a local endpoint to the socket C<$s>. The endpoint can be then used by other
+Adds a local endpoint to the socket `$s`. The endpoint can be then used by other
 applications to connect to.
 
-The C<$addr> argument consists of two parts as follows:
-C<transport://address>. The C<transport> specifies the underlying transport
-protocol to use. The meaning of the C<address> part is specific to the
+The `$addr` argument consists of two parts as follows:
+`transport://address`. The `transport` specifies the underlying transport
+protocol to use. The meaning of the `address` part is specific to the
 underlying transport protocol.
 
-See L</Transports> for a list of available transport protocols.
+See ["Transports"](#transports) for a list of available transport protocols.
 
-The maximum length of the C<$addr> parameter is specified by C<NN_SOCKADDR_MAX>
+The maximum length of the `$addr` parameter is specified by `NN_SOCKADDR_MAX`
 constant.
 
-Note that C<nn_bind> and C<nn_connect> may be called multiple times on the same
+Note that `nn_bind` and `nn_connect` may be called multiple times on the same
 socket thus allowing the socket to communicate with multiple heterogeneous
 endpoints.
 
 If the function succeeds, an endpoint ID is returned. Endpoint ID can be later
-used to remove the endpoint from the socket via C<nn_shutdown> function.
+used to remove the endpoint from the socket via `nn_shutdown` function.
 
-If the function fails, C<undef> is returned and C<nn_errno> is set to to one of
+If the function fails, `undef` is returned and `nn_errno` is set to to one of
 the values defined below.
 
-=for :list
-* C<EBADF>
+### 
+* `EBADF`
 The provided socket is invalid.
-* C<EMFILE>
+* `EMFILE`
 Maximum number of active endpoints was reached.
-* C<EINVAL>
+* `EINVAL`
 The syntax of the supplied address is invalid.
-* C<ENAMETOOLONG>
+* `ENAMETOOLONG`
 The supplied address is too long.
-* C<EPROTONOSUPPORT>
+* `EPROTONOSUPPORT`
 The requested transport protocol is not supported.
-* C<EADDRNOTAVAIL>
+* `EADDRNOTAVAIL`
 The requested endpoint is not local.
-* C<ENODEV>
+* `ENODEV`
 Address specifies a nonexistent interface.
-* C<EADDRINUSE>
+* `EADDRINUSE`
 The requested local endpoint is already in use.
-* C<ETERM>
+* `ETERM`
 The library is terminating.
 
-=func nn_connect($s, $addr)
+### nn\_connect($s, $addr)
 
     my $eid = nn_connect($s, 'inproc://test');
     die nn_errno unless defined $eid;
 
-Adds a remote endpoint to the socket C<$s>. The library would then try to
+Adds a remote endpoint to the socket `$s`. The library would then try to
 connect to the specified remote endpoint.
 
-The C<$addr> argument consists of two parts as follows:
-C<transport://address>. The C<transport> specifies the underlying transport
-protocol to use. The meaning of the C<address> part is specific to the
+The `$addr` argument consists of two parts as follows:
+`transport://address`. The `transport` specifies the underlying transport
+protocol to use. The meaning of the `address` part is specific to the
 underlying transport protocol.
 
-See L</Protocols> for a list of available transport protocols.
+See ["Protocols"](#protocols) for a list of available transport protocols.
 
-The maximum length of the C<$addr> parameter is specified by C<NN_SOCKADDR_MAX>
+The maximum length of the `$addr` parameter is specified by `NN_SOCKADDR_MAX`
 constant.
 
-Note that C<nn_connect> and C<nn_bind> may be called multiple times on the same
+Note that `nn_connect` and `nn_bind` may be called multiple times on the same
 socket thus allowing the socket to communicate with multiple heterogeneous
 endpoints.
 
 If the function succeeds, an endpoint ID is returned. Endpoint ID can be later
-used to remove the endpoint from the socket via C<nn_shutdown> function.
+used to remove the endpoint from the socket via `nn_shutdown` function.
 
-If the function fails, C<undef> is returned and C<nn_errno> is set to to one of
+If the function fails, `undef` is returned and `nn_errno` is set to to one of
 the values defined below.
 
-=for :list
-* C<EBADF>
+### 
+* `EBADF`
 The provided socket is invalid.
-* C<EMFILE>
+* `EMFILE`
 Maximum number of active endpoints was reached.
-* C<EINVAL>
+* `EINVAL`
 The syntax of the supplied address is invalid.
-* C<ENAMETOOLONG>
+* `ENAMETOOLONG`
 The supplied address is too long.
-* C<EPROTONOSUPPORT>
+* `EPROTONOSUPPORT`
 The requested transport protocol is not supported.
-* C<ENODEV>
+* `ENODEV`
 Address specifies a nonexistent interface.
-* C<ETERM>
+* `ETERM`
 The library is terminating.
 
-=func nn_shutdown($s, $eid)
+### nn\_shutdown($s, $eid)
 
     nn_shutdown($s, $eid) or die nn_errno;
 
-Removes an endpoint from socket C<$s>. The C<eid> parameter specifies the ID of
-the endpoint to remove as returned by prior call to C<nn_bind> or
-C<nn_connect>.
+Removes an endpoint from socket `$s`. The `eid` parameter specifies the ID of
+the endpoint to remove as returned by prior call to `nn_bind` or
+`nn_connect`.
 
-The C<nn_shutdown> call will return immediately. However, the library will try
+The `nn_shutdown` call will return immediately. However, the library will try
 to deliver any outstanding outbound messages to the endpoint for the time
-specified by the C<NN_LINGER> socket option.
+specified by the `NN_LINGER` socket option.
 
-If the function succeeds, a true value is returned. Otherwise, C<undef> is
-returned and C<nn_errno> is set to to one of the values defined below.
+If the function succeeds, a true value is returned. Otherwise, `undef` is
+returned and `nn_errno` is set to to one of the values defined below.
 
-=for :list
-* C<EBADF>
+### 
+* `EBADF`
 The provided socket is invalid.
-* C<EINVAL>
+* `EINVAL`
 The how parameter doesn't correspond to an active endpoint.
-* C<EINTR>
+* `EINTR`
 Operation was interrupted by a signal. The endpoint is not fully closed
-yet. Operation can be re-started by calling C<nn_shutdown> again.
-* C<ETERM>
+yet. Operation can be re-started by calling `nn_shutdown` again.
+* `ETERM`
 The library is terminating.
 
-=func nn_send($s, $data, $flags=0)
+### nn\_send($s, $data, $flags=0)
 
     my $bytes_sent = nn_send($s, 'foo');
     die nn_errno unless defined $bytes_sent;
 
-This function will send a message containing the provided C<$data> to the socket
-C<$s>.
+This function will send a message containing the provided `$data` to the socket
+`$s`.
 
-C<$data> can either be anything that can be used as a byte string in perl or a
-message buffer instance allocated by C<nn_allocmsg>. In case of a message buffer
-instance the instance will be deallocated and invalidated by the C<nn_send>
-function. The buffer will be an instance of C<NanoMsg::Raw::Message::Freed>
-after the call to C<nn_send>.
+`$data` can either be anything that can be used as a byte string in perl or a
+message buffer instance allocated by `nn_allocmsg`. In case of a message buffer
+instance the instance will be deallocated and invalidated by the `nn_send`
+function. The buffer will be an instance of `NanoMsg::Raw::Message::Freed`
+after the call to `nn_send`.
 
 Which of the peers the message will be sent to is determined by the particular
 socket type.
 
-The C<$flags> argument, which defaults to C<0>, is a combination of the flags
+The `$flags` argument, which defaults to `0`, is a combination of the flags
 defined below:
 
-=for :list
-* C<NN_DONTWAIT>
+### 
+* `NN_DONTWAIT`
 Specifies that the operation should be performed in non-blocking mode. If the
-message cannot be sent straight away, the function will fail with C<nn_errno>
-set to C<EAGAIN>.
+message cannot be sent straight away, the function will fail with `nn_errno`
+set to `EAGAIN`.
 
 If the function succeeds, the number of bytes in the message is
-returned. Otherwise, a C<undef> is returned and C<nn_errno> is set to to one of
+returned. Otherwise, a `undef` is returned and `nn_errno` is set to to one of
 the values defined below.
 
-=for :list
-* C<EBADF>
+### 
+* `EBADF`
 The provided socket is invalid.
-* C<ENOTSUP>
+* `ENOTSUP`
 The operation is not supported by this socket type.
-* C<EFSM>
+* `EFSM`
 The operation cannot be performed on this socket at the moment because the
 socket is not in the appropriate state. This error may occur with socket types
 that switch between several states.
-* C<EAGAIN>
+* `EAGAIN`
 Non-blocking mode was requested and the message cannot be sent at the moment.
-* C<EINTR>
+* `EINTR`
 The operation was interrupted by delivery of a signal before the message was
 sent.
-* C<ETIMEDOUT>
+* `ETIMEDOUT`
 Individual socket types may define their own specific timeouts. If such timeout
 is hit, this error will be returned.
-* C<ETERM>
+* `ETERM`
 The library is terminating.
 
-=func nn_recv($s, $data, $length=NN_MSG, $flags=0)
+### nn\_recv($s, $data, $length=NN\_MSG, $flags=0)
 
     my $bytes_received = nn_recv($s, my $buf, 256);
     die nn_errno unless defined $bytes_received;
 
-Receive a message from the socket C<$s> and store it in the buffer C<$buf>. Any
-bytes exceeding the length specified by the C<$length> argument will be
+Receive a message from the socket `$s` and store it in the buffer `$buf`. Any
+bytes exceeding the length specified by the `$length` argument will be
 truncated.
 
-Alternatively, C<nn_recv> can allocate a message buffer instance for you. To do
-so, set the C<$length> parameter to C<NN_MSG> (the default).
+Alternatively, `nn_recv` can allocate a message buffer instance for you. To do
+so, set the `$length` parameter to `NN_MSG` (the default).
 
-The C<$flags> argument, which defaults to C<0>, is a combination of the flags
+The `$flags` argument, which defaults to `0`, is a combination of the flags
 defined below:
 
-=for :list
-* C<NN_DONTWAIT>
+### 
+* `NN_DONTWAIT`
 Specifies that the operation should be performed in non-blocking mode. If the
 message cannot be received straight away, the function will fail with
-C<nn_errno> set to C<EAGAIN>.
+`nn_errno` set to `EAGAIN`.
 
 If the function succeeds number of bytes in the message is returned. Otherwise,
-C<undef> is returned and C<nn_errno> is set to to one of the values defined
+`undef` is returned and `nn_errno` is set to to one of the values defined
 below.
 
-=for :list
-* C<EBADF>
+### 
+* `EBADF`
 The provided socket is invalid.
-* C<ENOTSUP>
+* `ENOTSUP`
 The operation is not supported by this socket type.
-* C<EFSM>
+* `EFSM`
 The operation cannot be performed on this socket at the moment because socket is
 not in the appropriate state. This error may occur with socket types that switch
 between several states.
-* C<EAGAIN>
+* `EAGAIN`
 Non-blocking mode was requested and there's no message to receive at the moment.
-* C<EINTR>
+* `EINTR`
 The operation was interrupted by delivery of a signal before the message was
 received.
-* C<ETIMEDOUT>
+* `ETIMEDOUT`
 Individual socket types may define their own specific timeouts. If such timeout
 is hit this error will be returned.
-* C<ETERM>
+* `ETERM`
 The library is terminating.
 
-=func nn_sendmsg($s, $flags, $data1, $data2, ..., $dataN)
+### nn\_sendmsg($s, $flags, $data1, $data2, ..., $dataN)
 
     my $bytes_sent = nn_sendmsg($s, 0, 'foo', 'bar');
     die nn_errno unless defined $bytes_sent;
 
-This function is a fine-grained alternative to C<nn_send>. It allows sending
+This function is a fine-grained alternative to `nn_send`. It allows sending
 multiple data buffers that make up a single message without having to create
 another temporary buffer to hold the concatenation of the different message
 parts.
 
-The scalars containing the data to be sent (C<$data1>, C<$data2>, ...,
-C<$dataN>) can either be anything that can be used as a byte string in perl or a
-message buffer instance allocated by C<nn_allocmsg>. In case of a message buffer
-instance the instance will be deallocated and invalidated by the C<nn_sendmsg>
-function. The buffers will be a instances of C<NanoMsg::Raw::Message::Freed>
-after the call to C<nn_sendmsg>.
+The scalars containing the data to be sent (`$data1`, `$data2`, ...,
+`$dataN`) can either be anything that can be used as a byte string in perl or a
+message buffer instance allocated by `nn_allocmsg`. In case of a message buffer
+instance the instance will be deallocated and invalidated by the `nn_sendmsg`
+function. The buffers will be a instances of `NanoMsg::Raw::Message::Freed`
+after the call to `nn_sendmsg`.
 
 When using message buffer instances, only one buffer may be provided.
 
 To which of the peers will the message be sent to is determined by the
 particular socket type.
 
-The C<$flags> argument is a combination of the flags defined below:
+The `$flags` argument is a combination of the flags defined below:
 
-=for :list
-* C<NN_DONTWAIT>
+### 
+* `NN_DONTWAIT`
 Specifies that the operation should be performed in non-blocking mode. If the
-message cannot be sent straight away, the function will fail with C<nn_errno>
-set to C<EAGAIN>.
+message cannot be sent straight away, the function will fail with `nn_errno`
+set to `EAGAIN`.
 
 If the function succeeds number of bytes in the message is returned. Otherwise,
-C<undef> is returned and C<nn_errno> is set to to one of the values defined
+`undef` is returned and `nn_errno` is set to to one of the values defined
 below.
 
-=for :list
-* C<EBADF>
+### 
+* `EBADF`
 The provided socket is invalid.
-* C<ENOTSUP>
+* `ENOTSUP`
 The operation is not supported by this socket type.
-* C<EFSM>
+* `EFSM`
 The operation cannot be performed on this socket at the moment because socket is
 not in the appropriate state. This error may occur with socket types that switch
 between several states.
-* C<EAGAIN>
+* `EAGAIN`
 Non-blocking mode was requested and the message cannot be sent at the moment.
-* C<EINTR>
+* `EINTR`
 The operation was interrupted by delivery of a signal before the message was
 sent.
-* C<ETIMEDOUT>
+* `ETIMEDOUT`
 Individual socket types may define their own specific timeouts. If such timeout
 is hit this error will be returned.
-* C<ETERM>
+* `ETERM`
 The library is terminating.
 
-In the future, C<nn_sendmsg> might allow for sending along additional control
+In the future, `nn_sendmsg` might allow for sending along additional control
 data.
 
-=func nn_recvmsg($s, $flags, $data1 => $len1, $data2 => $len2, ..., $dataN => $lenN)
+### nn\_recvmsg($s, $flags, $data1 => $len1, $data2 => $len2, ..., $dataN => $lenN)
 
     my $bytes_received = nn_recvmsg($s, 0, my $buf1 => 256, my $buf2 => 1024);
     die nn_errno unless defined $bytes_received;
 
-This function is a fine-grained alternative to C<nn_recv>. It allows receiving a
+This function is a fine-grained alternative to `nn_recv`. It allows receiving a
 single message into multiple data buffers of different sizes, eliminating the
 need to create copies of part of the received message in some cases.
 
-The scalars in which to receive the message data (C<$buf1>, C<$buf2>, ...,
-C<$bufN>) will be filled with as many bytes of data as is specified by the
-length parameter following them in the argument list (C<$len1>, C<$len2>, ...,
-C<$lenN>).
+The scalars in which to receive the message data (`$buf1`, `$buf2`, ...,
+`$bufN`) will be filled with as many bytes of data as is specified by the
+length parameter following them in the argument list (`$len1`, `$len2`, ...,
+`$lenN`).
 
-Alternatively, C<nn_recvmsg> can allocate a message buffer instance for you. To
-do so, set the length parameter of a buffer to to C<NN_MSG>. In this case, only
+Alternatively, `nn_recvmsg` can allocate a message buffer instance for you. To
+do so, set the length parameter of a buffer to to `NN_MSG`. In this case, only
 one receive buffer can be provided.
 
-The C<$flags> argument is a combination of the flags defined below:
+The `$flags` argument is a combination of the flags defined below:
 
-=for :list
-* C<NN_DONTWAIT>
+### 
+* `NN_DONTWAIT`
 Specifies that the operation should be performed in non-blocking mode. If the
 message cannot be received straight away, the function will fail with
-C<nn_errno> set to C<EAGAIN>.
+`nn_errno` set to `EAGAIN`.
 
-In the future, C<nn_recvmsg> might allow for receiving additional control data.
+In the future, `nn_recvmsg` might allow for receiving additional control data.
 
-=func nn_allocmsg($size, $type)
+### nn\_allocmsg($size, $type)
 
     my $msg = nn_allocmsg(3, 0) or die nn_errno;
     $msg->copy('foo');
     nn_send($s, $msg);
 
-Allocate a message of the specified C<$size> to be sent in zero-copy
+Allocate a message of the specified `$size` to be sent in zero-copy
 fashion. The content of the message is undefined after allocation and it should
-be filled in by the user. While C<nn_send> and C<nn_sendmsg> allow to send
-arbitrary buffers, buffers allocated using C<nn_allocmsg> can be more efficient
+be filled in by the user. While `nn_send` and `nn_sendmsg` allow to send
+arbitrary buffers, buffers allocated using `nn_allocmsg` can be more efficient
 for large messages as they allow for using zero-copy techniques.
 
-The C<$type> parameter specifies type of allocation mechanism to use. Zero is
+The `$type` parameter specifies type of allocation mechanism to use. Zero is
 the default one. However, individual transport mechanisms may define their own
 allocation mechanisms, such as allocating in shared memory or allocating a
 memory block pinned down to a physical memory address. Such allocation, when
@@ -600,78 +569,78 @@ used with the transport that defines them, should be more efficient than the
 default allocation mechanism.
 
 If the function succeeds a newly allocated message buffer instance (an object
-instance of the class L<NanoMsg::Raw::Message>) is returned. Otherwise, C<undef>
-is returned and C<nn_errno> is set to to one of the values defined below.
+instance of the class [NanoMsg::Raw::Message](https://metacpan.org/pod/NanoMsg::Raw::Message)) is returned. Otherwise, `undef`
+is returned and `nn_errno` is set to to one of the values defined below.
 
-=for :list
-* C<EINVAL>
+### 
+* `EINVAL`
 Supplied allocation type is invalid.
-* C<ENOMEM>
+* `ENOMEM`
 Not enough memory to allocate the message.
 
-=func nn_errno()
+### nn\_errno()
 
-Returns value of C<errno> after the last call to any nanomsg function in the
-current thread. This function can be used in the same way the C<$!> global
+Returns value of `errno` after the last call to any nanomsg function in the
+current thread. This function can be used in the same way the `$!` global
 variable is be used for many other system and library calls.
 
 The return value can be used in numeric context, for example to compare it with
-error code constants such as C<EAGAIN>, or in a string context, to retrieve a
+error code constants such as `EAGAIN`, or in a string context, to retrieve a
 textual message describing the error.
 
-=func nn_strerror($errno)
+### nn\_strerror($errno)
 
 Returns a textual representation of the error described by the nummeric
-C<$errno> provided. It shouldn't normally be necessary to ever call this
-function, as using C<nn_errno> in string context is basically equivalent to
-C<nn_strerror(nn_errno)>.
+`$errno` provided. It shouldn't normally be necessary to ever call this
+function, as using `nn_errno` in string context is basically equivalent to
+`nn_strerror(nn_errno)`.
 
-=func nn_device($s1, $s2)
+### nn\_device($s1, $s2)
 
     nn_device($s1, $s2) or die;
 
 Starts a device to forward messages between two sockets. If both sockets are
-valid, the C<nn_device> function loops and sends and messages received from
-C<$s1> to C<$s2> and vice versa. If only one socket is valid and the other is
-C<undef>, C<nn_device> works in a loopback mode - it loops and sends any
+valid, the `nn_device` function loops and sends and messages received from
+`$s1` to `$s2` and vice versa. If only one socket is valid and the other is
+`undef`, `nn_device` works in a loopback mode - it loops and sends any
 messages received from the socket back to itself.
 
-The function loops until it hits an error. In such case it returns C<undef> and
-sets C<nn_errno> to one of the values defined below.
+The function loops until it hits an error. In such case it returns `undef` and
+sets `nn_errno` to one of the values defined below.
 
-=for :list
-* C<EBADF>
+### 
+* `EBADF`
 One of the provided sockets is invalid.
-* C<EINVAL>
-Either one of the socket is not an C<AF_SP_RAW> socket; or the two sockets don't
+* `EINVAL`
+Either one of the socket is not an `AF_SP_RAW` socket; or the two sockets don't
 belong to the same protocol; or the directionality of the sockets doesn't fit
 (e.g. attempt to join two SINK sockets to form a device).
-* C<EINTR>
+* `EINTR`
 The operation was interrupted by delivery of a signal.
-* C<ETERM>
+* `ETERM`
 The library is terminating.
 
-=func nn_term()
+### nn\_term()
 
     nn_term();
 
-To help with shutdown of multi-threaded programs the C<nn_term> function is
+To help with shutdown of multi-threaded programs the `nn_term` function is
 provided. It informs all the open sockets that process termination is underway.
 
-If a socket is blocked inside a blocking function, such as C<nn_recv>, it will
-be unblocked and the C<ETERM> error will be returned to the user. Similarly, any
-subsequent attempt to invoke a socket function other than C<nn_close> after
-C<nn_term> was called will result in an C<ETERM> error.
+If a socket is blocked inside a blocking function, such as `nn_recv`, it will
+be unblocked and the `ETERM` error will be returned to the user. Similarly, any
+subsequent attempt to invoke a socket function other than `nn_close` after
+`nn_term` was called will result in an `ETERM` error.
 
-If waiting for C<NN_SNDFD> or C<NN_RCVFD> using a polling function, such as
-C<poll> or C<select>, the call will unblock with both C<NN_SNDFD> and
-C<NN_RCVFD> signaled.
+If waiting for `NN_SNDFD` or `NN_RCVFD` using a polling function, such as
+`poll` or `select`, the call will unblock with both `NN_SNDFD` and
+`NN_RCVFD` signaled.
 
-The C<nn_term> function itself is non-blocking.
+The `nn_term` function itself is non-blocking.
 
-=head1 Protocols
+# Protocols
 
-=head2 One-to-one protocol
+## One-to-one protocol
 
 Pair protocol is the simplest and least scalable scalability protocol. It allows
 scaling by breaking the application in exactly two pieces. For example, if a
@@ -686,111 +655,111 @@ once more, say be separating HR functionality into hiring module and salary
 computation module. Whenever possible, try to use one of the more scalable
 protocols instead.
 
-=head3 Socket Types
+### Socket Types
 
-=for :list
-* C<NN_PAIR>
+### 
+* `NN_PAIR`
 Socket for communication with exactly one peer. Each party can send messages at
 any time. If the peer is not available or send buffer is full subsequent calls
-to C<nn_send> will block until it's possible to send the message.
+to `nn_send` will block until it's possible to send the message.
 
-=head3 Socket Options
+### Socket Options
 
 No protocol-specific socket options are defined at the moment.
 
-=head2 Request/reply protocol
+## Request/reply protocol
 
 This protocol is used to distribute the workload among multiple stateless workers.
 
-=head3 Socket Types
+### Socket Types
 
-=for :list
-* C<NN_REQ>
+### 
+* `NN_REQ`
 Used to implement the client application that sends requests and receives
 replies.
-* C<NN_REP>
+* `NN_REP`
 Used to implement the stateless worker that receives requests and sends replies.
 
-=head3 Socket Options
+### Socket Options
 
-=for :list
-* C<NN_REQ_RESEND_IVL>
+### 
+* `NN_REQ_RESEND_IVL`
 This option is defined on the full REQ socket. If a reply is not received in
 specified amount of milliseconds, the request will be automatically resent. The
 type of this option is int. Default value is 60000 (1 minute).
 
-=head2 Publish/subscribe protocol
+## Publish/subscribe protocol
 
 Broadcasts messages to multiple destinations.
 
-=head3 Socket Types
+### Socket Types
 
-=for :list
-* C<NN_PUB>
+### 
+* `NN_PUB`
 This socket is used to distribute messages to multiple destinations. Receive
 operation is not defined.
-* C<NN_SUB>
+* `NN_SUB`
 Receives messages from the publisher. Only messages that the socket is
 subscribed to are received. When the socket is created there are no
 subscriptions and thus no messages will be received. Send operation is not
 defined on this socket.
 
-=head3 Socket Options
+### Socket Options
 
-=for :list
-* C<NN_SUB_SUBSCRIBE>
+### 
+* `NN_SUB_SUBSCRIBE`
 Defined on full SUB socket. Subscribes for a particular topic. Type of the
 option is string.
-* C<NN_SUB_UNSUBSCRIBE>
+* `NN_SUB_UNSUBSCRIBE`
 Defined on full SUB socket. Unsubscribes from a particular topic. Type of the
 option is string.
 
-=head2 Survey protocol
+## Survey protocol
 
-allows one to broadcast a survey to multiple locations and gather the responses.
+Allows one to broadcast a survey to multiple locations and gather the responses.
 
-=head3 Socket Types
+### Socket Types
 
-=for :list
-* C<NN_SURVEYOR>
+### 
+* `NN_SURVEYOR`
 Used to send the survey. The survey is delivered to all the connected
 respondents. Once the query is sent, the socket can be used to receive the
 responses. When the survey deadline expires, receive will return the
-C<ETIMEDOUT> error.
-* C<NN_RESPONDENT>
+`ETIMEDOUT` error.
+* `NN_RESPONDENT`
 Use to respond to the survey. Survey is received using receive function,
 response is sent using send function. This socket can be connected to at most
 one peer.
 
-=head3 Socket Options
+### Socket Options
 
-=for :list
-* C<NN_SURVEYOR_DEADLINE>
+### 
+* `NN_SURVEYOR_DEADLINE`
 Specifies how long to wait for responses to the survey. Once the deadline
-expires, receive function will return the C<ETIMEDOUT> error and all subsequent
+expires, receive function will return the `ETIMEDOUT` error and all subsequent
 responses to the survey will be silently dropped. The deadline is measured in
 milliseconds. Option type is int. Default value is 1000 (1 second).
 
-=head2 Pipeline protocol
+## Pipeline protocol
 
 Fair queues messages from the previous processing step and load balances them
 among instances of the next processing step.
 
-=head3 Socket Types
+### Socket Types
 
-=for :list
-* C<NN_PUSH>
+### 
+* `NN_PUSH`
 This socket is used to send messages to a cluster of load-balanced
 nodes. Receive operation is not implemented on this socket type.
-* C<NN_PULL>
+* `NN_PULL`
 This socket is used to receive a message from a cluster of nodes. Send operation
 is not implemented on this socket type.
 
-=head3 Socket Options
+### Socket Options
 
 No protocol-specific socket options are defined at the moment.
 
-=head2 Message bus protocol
+## Message bus protocol
 
 Broadcasts messages from any node to all other nodes in the topology. The socket
 should never receives messages that it sent itself.
@@ -799,83 +768,83 @@ This pattern scales only to local level (within a single machine or within a
 single LAN). Trying to scale it further can result in overloading individual
 nodes with messages.
 
-B<WARNING>: For bus topology to function correctly, the user is responsible for
+**WARNING**: For bus topology to function correctly, the user is responsible for
 ensuring that path from each node to any other node exists within the topology.
 
-Raw (C<AF_SP_RAW>) BUS socket never send the message to the peer it was received
+Raw (`AF_SP_RAW`) BUS socket never send the message to the peer it was received
 from.
 
-=head3 Socket Types
+### Socket Types
 
-=for :list
-* C<NN_BUS>
+### 
+* `NN_BUS`
 Sent messages are distributed to all nodes in the topology. Incoming messages
 from all other nodes in the topology are fair-queued in the socket.
 
-=head3 Socket Options
+### Socket Options
 
 There are no options defined at the moment.
 
-=head1 Transports
+# Transports
 
-=head2 In-process transport
+## In-process transport
 
 The in-process transport allows one to send messages between threads or modules inside a
 process. In-process address is an arbitrary case-sensitive string preceded by
-C<inproc://> protocol specifier. All in-process addresses are visible from any
+`inproc://` protocol specifier. All in-process addresses are visible from any
 module within the process. They are not visible from outside of the process.
 
 The overall buffer size for an inproc connection is determined by the
-C<NN_RCVBUF> socket option on the receiving end of the connection. The
-C<NN_SNDBUF> socket option is ignored. In addition to the buffer, one message of
+`NN_RCVBUF` socket option on the receiving end of the connection. The
+`NN_SNDBUF` socket option is ignored. In addition to the buffer, one message of
 arbitrary size will fit into the buffer. That way, even messages larger than the
 buffer can be transferred via inproc connection.
 
-This transport's ID is C<NN_INPROC>.
+This transport's ID is `NN_INPROC`.
 
-=head2 Inter-process transport
+## Inter-process transport
 
 The inter-process transport allows for sending messages between processes within
 a single box. The implementation uses native IPC mechanism provided by the local
 operating system and the IPC addresses are thus OS-specific.
 
 On POSIX-compliant systems, UNIX domain sockets are used and IPC addresses are
-file references. Note that both relative (C<ipc://test.ipc>) and absolute
-(C<ipc:///tmp/test.ipc>) paths may be used. Also note that access rights on the
+file references. Note that both relative (`ipc://test.ipc`) and absolute
+(`ipc:///tmp/test.ipc`) paths may be used. Also note that access rights on the
 IPC files must be set in such a way that the appropriate applications can
 actually use them.
 
 On Windows, named pipes are used for IPC. IPC address is an arbitrary
 case-insensitive string containing any character except for
-backslash. Internally, address C<ipc://test> means that named pipe
-C<\\.\pipe\test> will be used.
+backslash. Internally, address `ipc://test` means that named pipe
+`\\.\pipe\test` will be used.
 
-This transport's ID is C<NN_IPC>.
+This transport's ID is `NN_IPC`.
 
-=head2 TCP transport
+## TCP transport
 
 The TCP transport allows for passing message over the network using simple
 reliable one-to-one connections. TCP is the most widely used transport protocol,
 it is virtually ubiquitous and thus the transport of choice for communication
 over the network.
 
-When binding a TCP socket address of the form C<tcp://interface:port> should be
+When binding a TCP socket address of the form `tcp://interface:port` should be
 used. Port is the TCP port number to use. Interface is one of the following
 (optionally placed within square brackets):
 
-=for :list
-* Asterisk character (*) meaning all local network interfaces.
+### 
+* Asterisk character (\*) meaning all local network interfaces.
 * IPv4 address of a local network interface in numeric form (192.168.0.111).
 * IPv6 address of a local network interface in numeric form (::1).
 * Interface name, as defined by operating system.
 
-When connecting a TCP socket address of the form C<tcp://interface;address:port>
+When connecting a TCP socket address of the form `tcp://interface;address:port`
 should be used. Port is the TCP port number to use. Interface is optional and
 specifies which local network interface to use. If not specified, OS will select
 an appropriate interface itself. If specified it can be one of the following
 (optionally placed within square brackets):
 
-=for :list
+### 
 * IPv4 address of a local network interface in numeric form (192.168.0.111).
 * IPv6 address of a local network interface in numeric form (::1).
 * Interface name, as defined by operating system (eth0).
@@ -883,112 +852,42 @@ an appropriate interface itself. If specified it can be one of the following
 Finally, address specifies the remote address to connect to. It can be one of
 the following (optionally placed within square brackets):
 
-=for :list
+### 
 * IPv4 address of a remote network interface in numeric form (192.168.0.111).
 * IPv6 address of a remote network interface in numeric form (::1).
 * The DNS name of the remote box.
 
-This transport's ID is C<NN_TCP>.
+This transport's ID is `NN_TCP`.
 
-=head3 Socket Options
+### Socket Options
 
-=for :list
-* C<NN_TCP_NODELAY>
+### 
+* `NN_TCP_NODELAY`
 This option, when set to 1, disables Nagle's algorithm. It also disables
 delaying of TCP acknowledgments. Using this option improves latency at the
 expense of throughput. Type of this option is int. The default value is 0.
 
-=head1 Constants
+# Constants
 
-In addition to all the error constants and C<NN_> constants used in the
+In addition to all the error constants and `NN_` constants used in the
 documentation of the individual functions, protocols, and transports, the
 following constants are available:
 
-=for :list
-* C<NN_VERSION_CURRENT>
+### 
+* `NN_VERSION_CURRENT`
 The current interface version.
-* C<NN_VERSION_REVISION>
+* `NN_VERSION_REVISION`
 The latest revision of the current interface.
-* C<NN_VERSION_AGE>
+* `NN_VERSION_AGE`
 How many past interface versions are still supported.
 
-=for Pod::Coverage - we document these already
-AF_SP
-AF_SP_RAW
-EADDRINUSE
-EADDRNOTAVAIL
-EAFNOSUPPORT
-EAGAIN
-EBADF
-EFSM
-EINTR
-EINVAL
-EMFILE
-ENAMETOOLONG
-ENODEV
-ENOMEM
-ENOPROTOOPT
-ENOTSUP
-EPROTONOSUPPORT
-ETERM
-ETIMEDOUT
-NN_BUS
-NN_DOMAIN
-NN_DONTWAIT
-NN_INPROC
-NN_IPC
-NN_LINGER
-NN_MSG
-NN_PAIR
-NN_PROTOCOL
-NN_PUB
-NN_PULL
-NN_PUSH
-NN_RCVBUF
-NN_RCVFD
-NN_RCVTIMEO
-NN_RECONNECT_IVL
-NN_RECONNECT_IVL_MAX
-NN_REP
-NN_REQ
-NN_REQ_RESEND_IVL
-NN_RESPONDENT
-NN_SNDBUF
-NN_SNDFD
-NN_SNDPRIO
-NN_SNDTIMEO
-NN_SOCKADDR_MAX
-NN_SOL_SOCKET
-NN_SUB
-NN_SUB_SUBSCRIBE
-NN_SUB_UNSUBSCRIBE
-NN_SURVEYOR
-NN_SURVEYOR_DEADLINE
-NN_TCP
-NN_TCP_NODELAY
-NN_VERSION_AGE
-NN_VERSION_CURRENT
-NN_VERSION_REVISION
+# SEE ALSO
 
-=for Pod::Coverage - not documented by upstream and perhaps not used; see https://github.com/250bpm/nanomsg/issues/108
-ECONNREFUSED
-EINPROGRESS
-ENETDOWN
-ENOBUFS
-ENOTSOCK
-EPROTO
-
-=head1 SEE ALSO
-
-=for :list
-* The nanomsg C library documentation at L<http://nanomsg.org/v0.1/nanomsg.7.html>
+### 
+* The nanomsg C library documentation at [http://nanomsg.org/v0.1/nanomsg.7.html](http://nanomsg.org/v0.1/nanomsg.7.html)
 The API this module provides is very close to the C library's interface, so the
 C documentation is likely to be useful to developers using Perl,
 too. Additionally, most of this module's documentation is copied from the C
 library documentation, so the upstream documentation might be somewhat more
 recent.
-* L<NanoMsg::Raw::Message>
-
-=cut
-
-1;
+* [NanoMsg::Raw::Message](https://metacpan.org/pod/NanoMsg::Raw::Message)
