@@ -1,5 +1,7 @@
 0.05  2015-05-04
   - Remove t/threads.t - The test sometimes fails for misterious reason.
+  - t/timeo.t accept timeouts between .1 and .12
+
 0.04  2015-01-28
   - Make sure the nanomsg library and the headers are available
 
