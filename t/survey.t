@@ -30,14 +30,18 @@ is nn_recv($surveyor, $buf, 3, 0), 3;
 is nn_recv($surveyor, $buf, 3, 0), 3;
 
 is nn_recv($surveyor, $buf, 3, 0), undef;
-ok nn_errno == EFSM;
+
+# libnanmsg-0.5 returns EFSM libnanomsg-0.6 returns ETIMEDOUT
+ok ( nn_errno == EFSM or nn_errno == ETIMEDOUT );
 
 is nn_recv($respondent[2], $buf, 3, 0), 3;
 is nn_send($respondent[2], 'GHI', 0), 3;
 
 is nn_send($surveyor, 'ABC', 0), 3;
 is nn_recv($surveyor, $buf, 3, 0), undef;
-ok nn_errno == EFSM;
+
+# libnanmsg-0.5 returns EFSM libnanomsg-0.6 returns ETIMEDOUT
+ok ( nn_errno == EFSM or nn_errno == ETIMEDOUT );
 
 ok nn_close $_ for $surveyor, @respondent;
 

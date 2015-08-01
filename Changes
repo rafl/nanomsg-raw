@@ -1,3 +1,4 @@
+  - t/survey.t works with libnanomsg-0.6
 0.05  2015-05-04
   - Remove t/threads.t - The test sometimes fails for misterious reason.
   - t/timeo.t accept timeouts between .1 and .12
