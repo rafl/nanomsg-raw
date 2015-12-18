@@ -52,7 +52,7 @@ my $socket_address = 'inproc://test';
     while (1) {
         my $ret = nn_send $sc, '0123456789', 0;
         if (!defined $ret) {
-            ok nn_errno == EAGAIN;
+            ok ( nn_errno == EAGAIN or nn_errno == ETIMEDOUT );
             last;
         }
         is $ret, 10;
@@ -63,7 +63,7 @@ my $socket_address = 'inproc://test';
     is nn_recv($sb, my $buf, 256, 0), 10;
     is nn_send($sc, '0123456789', 0), 10;
     ok !defined nn_send($sc, '0123456789', 0);
-    ok nn_errno == EAGAIN;
+    ok ( nn_errno == EAGAIN or nn_errno == ETIMEDOUT );
 
     is nn_recv($sb, $buf, 256, 0), 10 for 1 .. 20;
 

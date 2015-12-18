@@ -25,7 +25,7 @@ my ($elapsed, $ret) = timeit {
 };
 
 ok !defined $ret;
-ok nn_errno == EAGAIN;
+ok ( nn_errno == EAGAIN or nn_errno == ETIMEDOUT );
 cmp_ok $elapsed, '>=', 0.1;
 cmp_ok $elapsed, '<=', 0.12;
 
@@ -36,7 +36,7 @@ ok nn_setsockopt($s, NN_SOL_SOCKET, NN_SNDTIMEO, $timeo);
 };
 
 ok !defined $ret;
-ok nn_errno == EAGAIN;
+ok ( nn_errno == EAGAIN or nn_errno == ETIMEDOUT );
 cmp_ok $elapsed, '>=', 0.1;
 cmp_ok $elapsed, '<=', 0.12;
 
