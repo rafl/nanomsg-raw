@@ -588,7 +588,7 @@ In the future, C<nn_recvmsg> might allow for receiving additional control data.
 
 Allocate a message of the specified C<$size> to be sent in zero-copy
 fashion. The content of the message is undefined after allocation and it should
-be filled in by the user. While C<nn_send> and C<nn_sendmsg> allow to send
+be filled in by the user. While C<nn_send> and C<nn_sendmsg> allow one to send
 arbitrary buffers, buffers allocated using C<nn_allocmsg> can be more efficient
 for large messages as they allow for using zero-copy techniques.
 
