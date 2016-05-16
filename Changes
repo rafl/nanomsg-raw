@@ -1,3 +1,7 @@
+0.07 2016-05-16
+  - Fix t/inproc.t, t/separation.t, t/timeo.t to work with libnanomsg 0.8 and
+above.
+0.06 2015-08-10
   - t/survey.t works with libnanomsg-0.6
 0.05  2015-05-04
   - Remove t/threads.t - The test sometimes fails for misterious reason.
