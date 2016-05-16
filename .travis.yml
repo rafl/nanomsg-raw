@@ -8,13 +8,16 @@ perl:
   - "5.12"
   - "5.10"
 before_install:
-  - export nanomsgver=0.8-beta
+  - export nanomsgver=0.9-beta
   - export nanomsgbuild=`mktemp -d`
   - pushd $nanomsgbuild
-  - wget https://github.com/nanomsg/nanomsg/releases/download/0.8-beta/nanomsg-${nanomsgver}.tar.gz
-  - tar xfz nanomsg-${nanomsgver}.tar.gz
+  - wget https://github.com/nanomsg/nanomsg/archive/${nanomsgver}.tar.gz
+  - tar xfz ${nanomsgver}.tar.gz
   - cd nanomsg-${nanomsgver}
-  - ./configure
+  - mkdir build
+  - cd build
+  - cmake ..
+  - cmake --build .
   - make
   - sudo make install
   - sudo ldconfig
