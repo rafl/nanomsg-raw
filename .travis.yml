@@ -9,7 +9,7 @@ perl:
   - "5.12"
   - "5.10"
 before_install:
-  - export nanomsgver=0.9-beta
+  - export nanomsgver=1.0.0
   - export nanomsgbuild=`mktemp -d`
   - pushd $nanomsgbuild
   - wget https://github.com/nanomsg/nanomsg/archive/${nanomsgver}.tar.gz
