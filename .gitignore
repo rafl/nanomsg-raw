@@ -7,4 +7,5 @@ Makefile*
 !Makefile.PL
 /Raw.*
 !/Raw.xs
+*.bak
 NanoMsg-Raw-*
