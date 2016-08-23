@@ -9,8 +9,9 @@ while (1) {
     my $s = nn_socket AF_SP, NN_PAIR;
     if (!defined $s) {
         ok nn_errno == EMFILE;
-        like nn_errno, qr/^too many open files/i;
-        like nn_strerror(nn_errno), qr/^too many open files/i;
+        # does not work with german/any locale other than C
+        #like nn_errno, qr/^too many open files/i;
+        #like nn_strerror(nn_errno), qr/^too many open files/i;
         last;
     }
     push @socks, $s;
