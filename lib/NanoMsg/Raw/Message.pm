@@ -37,12 +37,16 @@ containing a copy of the buffer content.
 A string pointing to the actual buffer content, without having to create a copy
 of it, can be obtained by dereferencing the message instance as a scalar.
 
-=method copy($data)
+=over 4
+
+=item copy($data)
 
     $msg->copy('foo');
 
 Copies C<$data> to the beginning of the buffer. If the data is larger than the
 space allocated for the buffer, an exception will be thrown.
+
+=back
 
 =head1 SEE ALSO
 
