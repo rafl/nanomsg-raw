@@ -1,3 +1,6 @@
+0.09 2016-11-03
+  - Do not test textual error messages reported by SREZIC
+  - Fix POD reported by gregoa
 0.07 2016-05-16
   - Fix t/inproc.t, t/separation.t, t/timeo.t to work with libnanomsg 0.8 and
 above.
