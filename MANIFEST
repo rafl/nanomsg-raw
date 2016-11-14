@@ -1,5 +1,4 @@
 Changes
-inc/MakeMaker.pm
 lib/NanoMsg/Raw.pm
 lib/NanoMsg/Raw/Message.pm
 LICENSE
