@@ -1,6 +1,6 @@
 package NanoMsg::Raw;
 # ABSTRACT: Low-level interface to the nanomsg scalability protocols library
-$NanoMsg::Raw::VERSION = '0.09';
+$NanoMsg::Raw::VERSION = '0.10';
 use strict;
 use warnings;
 use XSLoader;
