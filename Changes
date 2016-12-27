@@ -1,3 +1,5 @@
+0.10 2016-12-28
+  - Add NAME sections to POD patched by gregor herrmann
 0.09 2016-11-03
   - Do not test textual error messages reported by SREZIC
   - Fix POD reported by gregoa
