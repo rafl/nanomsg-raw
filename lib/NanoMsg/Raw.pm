@@ -29,6 +29,10 @@ our %EXPORT_TAGS = (
     functions => \@functions,
 );
 
+=head1 NAME
+
+NanoMsg::Raw - Low-level interface to the nanomsg scalability protocols library
+
 =head1 SYNOPSIS
 
     use Test::More;

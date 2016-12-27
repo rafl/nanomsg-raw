@@ -6,6 +6,10 @@ package NanoMsg::Raw::Message;
 
 use overload '""' => sub { ${ $_[0] } }, fallback => 1;
 
+=head1 NAME
+
+NanoMsg::Raw::Message - Message buffer for NanoMsg::Raw
+
 =head1 SYNOPSIS
 
     use NanoMsg::Raw;
